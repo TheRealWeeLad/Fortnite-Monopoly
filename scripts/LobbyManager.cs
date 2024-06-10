@@ -98,7 +98,7 @@ public partial class LobbyManager : Node
 	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
 	void LoadGame() => GetTree().ChangeSceneToPacked(_gameScene);
 	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
-	void LoadPlayer(GameManager game)
+	void LoadPlayer()
 	{
 		if (Multiplayer.IsServer())
 		{
@@ -106,6 +106,7 @@ public partial class LobbyManager : Node
 			if (playersLoaded == _players.Count)
 			{
 				// START GAME
+				Game game = GetNode<Game>("/root/Game");
 				game.Rpc("StartGame");
 			}
 		}
@@ -136,5 +137,36 @@ public partial class LobbyManager : Node
 		Multiplayer.MultiplayerPeer = null;
 		_players.Clear();
 		EmitSignal(SignalName.ServerDisconnected);
+	}
+
+
+
+	// DEBUG
+	void CreateDebug()
+	{
+		ENetMultiplayerPeer peer = new();
+		Error error = peer.CreateServer(PORT, MAX_CONNECTIONS);
+		Multiplayer.MultiplayerPeer = peer;
+
+		// Add player to list
+		player.Name = "HOST";
+		_players.Add(1, new() { Name = "HOST" });
+
+		// Show Lobby
+		EmitSignal(SignalName.PlayerConnected, 1, "HOST");
+	}
+	void JoinDebug()
+	{
+		player.Name = "CLIENT";
+
+		ENetMultiplayerPeer peer = new();
+		Error error = peer.CreateClient("127.0.0.1", PORT);
+		if (error != Error.Ok)
+		{
+			GD.PrintErr(error);
+			return;
+		}
+
+		Multiplayer.MultiplayerPeer = peer;
 	}
 }

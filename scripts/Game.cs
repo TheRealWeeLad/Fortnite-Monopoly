@@ -1,6 +1,7 @@
 using Godot;
+using System.Threading;
 
-public partial class GameManager : Node
+public partial class Game : Node
 {
 	PackedScene _playerScene;
 
@@ -12,13 +13,22 @@ public partial class GameManager : Node
 
 		// Tell server that this player is loaded
 		LobbyManager lobbyManager = GetNode<LobbyManager>("/root/LobbyManager");
-		lobbyManager.RpcId(1, "LoadPlayer", this);
+		Thread.Sleep(10); // Give time for LobbyManager to recognize game is loaded
+		lobbyManager.RpcId(1, "LoadPlayer");
+	}
+
+	// Called once per frame
+	public override void _Process(double delta)
+	{
+		
 	}
 
 	// Called when Server receives verification that all players have connected
 	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
 	void StartGame()
 	{
-		AddChild(_playerScene.Instantiate());
+		Node3D player = _playerScene.Instantiate() as Node3D;
+		AddChild(player);
+		(player.GetChild(0) as Camera3D).Current = true;
 	}
 }

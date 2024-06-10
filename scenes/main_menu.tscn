@@ -79,6 +79,17 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 48
 text = "Create Lobby"
 
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/Screen/VBoxContainer/Tabs/Create Lobby/VBoxContainer"]
+layout_mode = 2
+
+[node name="Button" type="Button" parent="CanvasLayer/Screen/VBoxContainer/Tabs/Create Lobby/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Create"
+
+[node name="Button2" type="Button" parent="CanvasLayer/Screen/VBoxContainer/Tabs/Create Lobby/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Join"
+
 [node name="Join Lobby" type="MarginContainer" parent="CanvasLayer/Screen/VBoxContainer/Tabs"]
 visible = false
 layout_mode = 2
@@ -172,6 +183,8 @@ text = "Leave Lobby"
 [node name="LobbyManager" parent="." instance=ExtResource("2_8bvu6")]
 
 [connection signal="pressed" from="CanvasLayer/Screen/VBoxContainer/Tabs/Create Lobby/VBoxContainer/Create Button" to="CanvasLayer/Screen/VBoxContainer/Lobby" method="CreateLobby"]
+[connection signal="pressed" from="CanvasLayer/Screen/VBoxContainer/Tabs/Create Lobby/VBoxContainer/HBoxContainer/Button" to="LobbyManager" method="CreateDebug"]
+[connection signal="pressed" from="CanvasLayer/Screen/VBoxContainer/Tabs/Create Lobby/VBoxContainer/HBoxContainer/Button2" to="LobbyManager" method="JoinDebug"]
 [connection signal="pressed" from="CanvasLayer/Screen/VBoxContainer/Tabs/Join Lobby/VBoxContainer/Join Button" to="CanvasLayer/Screen/VBoxContainer/Lobby" method="JoinLobby"]
 [connection signal="CreateMultiplayerLobby" from="CanvasLayer/Screen/VBoxContainer/Lobby" to="LobbyManager" method="CreateLobby"]
 [connection signal="JoinMultiplayerLobby" from="CanvasLayer/Screen/VBoxContainer/Lobby" to="LobbyManager" method="JoinLobby"]

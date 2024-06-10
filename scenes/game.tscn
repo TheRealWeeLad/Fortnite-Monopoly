@@ -1,12 +1,31 @@
-[gd_scene load_steps=4 format=3 uid="uid://c8nkdelaa7r41"]
+[gd_scene load_steps=7 format=3 uid="uid://c8nkdelaa7r41"]
 
 [ext_resource type="Texture2D" uid="uid://bmvtu1pvqnqgo" path="res://assets/board/board-full.webp" id="1_6lvoo"]
-[ext_resource type="Script" path="res://scripts/GameManager.cs" id="2_ao8sf"]
+[ext_resource type="Script" path="res://scripts/Game.cs" id="1_fohef"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_pkbdq"]
+sky_top_color = Color(0.230734, 0.323635, 0.715973, 1)
+sky_horizon_color = Color(0.780156, 0.581384, 0.710132, 1)
+ground_bottom_color = Color(0.259611, 0.194093, 0.054475, 1)
+ground_horizon_color = Color(0.346319, 0.741201, 0.563573, 1)
+
+[sub_resource type="Sky" id="Sky_xulxi"]
+sky_material = SubResource("ProceduralSkyMaterial_pkbdq")
+
+[sub_resource type="Environment" id="Environment_i3td8"]
+background_mode = 2
+sky = SubResource("Sky_xulxi")
+tonemap_mode = 2
+glow_enabled = true
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_vkvv6"]
 size = Vector3(9, 9, 0.0591431)
 
 [node name="Game" type="Node3D"]
+script = ExtResource("1_fohef")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_i3td8")
 
 [node name="Board" type="Area3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0)
@@ -17,7 +36,3 @@ shape = SubResource("BoxShape3D_vkvv6")
 
 [node name="Sprite3D" type="Sprite3D" parent="Board"]
 texture = ExtResource("1_6lvoo")
-
-[node name="GameManager" type="Node" parent="."]
-unique_name_in_owner = true
-script = ExtResource("2_ao8sf")
