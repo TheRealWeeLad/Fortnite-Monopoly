@@ -3,12 +3,21 @@ using System.Collections.Generic;
 
 public partial class Lobby : PanelContainer
 {
+	// Signals to LobbyManager
+	[Signal]
+	public delegate void CreateMultiplayerLobbyEventHandler(string username);
+	[Signal]
+	public delegate void JoinMultiplayerLobbyEventHandler(string username, string ip);
+
 	PackedScene lobbyMemberScene;
 	PanelContainer lobby;
 	VBoxContainer lobbyContainer;
 	TabContainer tabContainer;
 	Label lobbyTitle;
 	Button startButton;
+	TextEdit createNameField;
+	TextEdit joinNameField;
+	TextEdit ipField;
 
 	int numPlayers = 0;
 
@@ -23,6 +32,47 @@ public partial class Lobby : PanelContainer
 		tabContainer = GetNode<TabContainer>("%Tabs");
 		lobbyTitle = GetNode<Label>("%Lobby Title");
 		startButton = GetNode<Button>("%Start Button");
+		createNameField = GetNode<TextEdit>("%Create Name Field");
+		joinNameField = GetNode<TextEdit>("%Join Name Field");
+		ipField = GetNode<TextEdit>("%IP Field");
+	}
+
+	// Called when Create Lobby button pressed
+	void CreateLobby()
+	{
+		// Get username
+		string username = createNameField.Text;
+		if (username.Equals(""))
+		{
+			GD.Print("No username");
+			return;
+		}
+
+		// Create multiplayer lobby
+		EmitSignal(SignalName.CreateMultiplayerLobby, username);
+	}
+
+	// Called when Join Lobby button pressed
+	void JoinLobby()
+	{
+		// Get username
+		string username = joinNameField.Text;
+		if (username.Equals(""))
+		{
+			GD.Print("No username");
+			return;
+		}
+
+		// Get ip
+		string ip = ipField.Text;
+		if (ip.Equals(""))
+		{
+			GD.Print("No ip found");
+			return;
+		}
+
+		// Join multiplayer lobby
+		EmitSignal(SignalName.JoinMultiplayerLobby, username, ip);
 	}
 
 	// Called when any player connects
@@ -43,9 +93,7 @@ public partial class Lobby : PanelContainer
 			.GetNode<Label>("Username").Text = username;
 
 		numPlayers++;
-		// Update Start Button
-		startButton.Text = $"Start Game ({numPlayers}/4)";
-		startButton.Disabled = !Multiplayer.IsServer() || numPlayers < 2; // Can't play with only one player :(
+		UpdateStartButton();
 	}
 
 	// Called when any player disconnects
@@ -54,13 +102,17 @@ public partial class Lobby : PanelContainer
 		lobbyMembers[id].QueueFree();
 		lobbyMembers.Remove(id);
 		numPlayers--;
+		UpdateStartButton();
 	}
 
 	// Called when host player disconnects
 	void ServerDisconnected()
 	{
 		foreach (PanelContainer member in lobbyMembers.Values)
+		{
 			member.QueueFree();
+			numPlayers--;
+		}
 		lobbyMembers.Clear();
 
 		// Return to tabs
@@ -78,5 +130,12 @@ public partial class Lobby : PanelContainer
 		// Show tabs again
 		Visible = false;
 		tabContainer.Visible = true;
+	}
+
+	void UpdateStartButton()
+	{
+		// Update Start Button
+		startButton.Text = $"Start Game ({numPlayers}/4)";
+		startButton.Disabled = !Multiplayer.IsServer() || numPlayers < 2; // Can't play with only one player :(
 	}
 }

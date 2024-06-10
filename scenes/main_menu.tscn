@@ -171,8 +171,11 @@ text = "Leave Lobby"
 
 [node name="LobbyManager" parent="." instance=ExtResource("2_8bvu6")]
 
-[connection signal="pressed" from="CanvasLayer/Screen/VBoxContainer/Tabs/Create Lobby/VBoxContainer/Create Button" to="LobbyManager" method="CreateLobby"]
-[connection signal="pressed" from="CanvasLayer/Screen/VBoxContainer/Tabs/Join Lobby/VBoxContainer/Join Button" to="LobbyManager" method="JoinLobby"]
+[connection signal="pressed" from="CanvasLayer/Screen/VBoxContainer/Tabs/Create Lobby/VBoxContainer/Create Button" to="CanvasLayer/Screen/VBoxContainer/Lobby" method="CreateLobby"]
+[connection signal="pressed" from="CanvasLayer/Screen/VBoxContainer/Tabs/Join Lobby/VBoxContainer/Join Button" to="CanvasLayer/Screen/VBoxContainer/Lobby" method="JoinLobby"]
+[connection signal="CreateMultiplayerLobby" from="CanvasLayer/Screen/VBoxContainer/Lobby" to="LobbyManager" method="CreateLobby"]
+[connection signal="JoinMultiplayerLobby" from="CanvasLayer/Screen/VBoxContainer/Lobby" to="LobbyManager" method="JoinLobby"]
+[connection signal="pressed" from="CanvasLayer/Screen/VBoxContainer/Lobby/MarginContainer/Lobby Container/Buttons/Start Button" to="LobbyManager" method="StartGame"]
 [connection signal="pressed" from="CanvasLayer/Screen/VBoxContainer/Lobby/MarginContainer/Lobby Container/Buttons/Leave Button" to="CanvasLayer/Screen/VBoxContainer/Lobby" method="LeaveLobby"]
 [connection signal="PlayerConnected" from="LobbyManager" to="CanvasLayer/Screen/VBoxContainer/Lobby" method="PlayerConnected"]
 [connection signal="PlayerDisconnected" from="LobbyManager" to="CanvasLayer/Screen/VBoxContainer/Lobby" method="PlayerDisconnected"]

@@ -15,6 +15,10 @@ run/main_scene="res://scenes/main_menu.tscn"
 config/features=PackedStringArray("4.2", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+LobbyManager="*res://scenes/lobby_manager.tscn"
+
 [debug]
 
 multirun/number_of_windows=2

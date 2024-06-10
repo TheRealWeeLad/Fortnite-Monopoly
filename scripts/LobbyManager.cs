@@ -31,11 +31,10 @@ public partial class LobbyManager : Node
 	// Server info
 	const int PORT = 7000;
 	const int MAX_CONNECTIONS = 4;
+	int playersLoaded = 0;
 
-	// UI Elements
-	TextEdit _createNameField;
-	TextEdit _joinNameField;
-	TextEdit _ipField;
+	// Game Scene
+	PackedScene _gameScene;
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
@@ -46,14 +45,12 @@ public partial class LobbyManager : Node
 		Multiplayer.ConnectionFailed += OnConnectedFail;
 		Multiplayer.ServerDisconnected += OnServerDisconnected;
 
-		// Initialize UI Elements
-		_createNameField = GetNode<TextEdit>("%Create Name Field");
-		_joinNameField = GetNode<TextEdit>("%Join Name Field");
-		_ipField = GetNode<TextEdit>("%IP Field");
+		// Load Game Scene
+		_gameScene = GD.Load<PackedScene>("res://scenes/game.tscn");
 	}
 
 	// Called when create button is pressed
-	void CreateLobby()
+	void CreateLobby(string username)
 	{
 		ENetMultiplayerPeer peer = new();
 		Error error = peer.CreateServer(PORT, MAX_CONNECTIONS);
@@ -64,36 +61,17 @@ public partial class LobbyManager : Node
 		}
 		Multiplayer.MultiplayerPeer = peer;
 
-		// Get username
-		string username = _createNameField.Text;
+		// Add player to list
 		player.Name = username;
-		if (username.Equals(""))
-		{
-			GD.Print("Username Empty");
-			return;
-		}
 		_players.Add(1, new() { Name = username });
 
 		// Show Lobby
 		EmitSignal(SignalName.PlayerConnected, 1, username);
 	}
 	// Called when join button is pressed
-	void JoinLobby()
+	void JoinLobby(string username, string ip)
 	{
-		string username = _joinNameField.Text;
-		if (username.Equals(""))
-		{
-			GD.Print("No username");
-			return;
-		}
 		player.Name = username;
-
-		string ip = _ipField.Text;
-		if (ip.Equals(""))
-		{
-			GD.Print("No ip found");
-			return;
-		}
 
 		ENetMultiplayerPeer peer = new();
 		Error error = peer.CreateClient(ip, PORT);
@@ -105,6 +83,8 @@ public partial class LobbyManager : Node
 
 		Multiplayer.MultiplayerPeer = peer;
 	}
+	// Called when start button is pressed
+	void StartGame() => Rpc(nameof(LoadGame));
 
 	// RPCs
 	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
@@ -114,6 +94,21 @@ public partial class LobbyManager : Node
 		int plrId = Multiplayer.GetRemoteSenderId();
 		_players.Add(plrId, plr);
 		EmitSignal(SignalName.PlayerConnected, plrId, plr.Name);
+	}
+	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+	void LoadGame() => GetTree().ChangeSceneToPacked(_gameScene);
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+	void LoadPlayer(GameManager game)
+	{
+		if (Multiplayer.IsServer())
+		{
+			playersLoaded++;
+			if (playersLoaded == _players.Count)
+			{
+				// START GAME
+				game.Rpc("StartGame");
+			}
+		}
 	}
 
 	// Multiplayer Event Handlers
