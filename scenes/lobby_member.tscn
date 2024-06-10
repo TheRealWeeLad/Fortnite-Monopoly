@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://d3731rci1dce"]
+
+[node name="Lobby Member" type="PanelContainer"]
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="Username" type="Label" parent="MarginContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Username"

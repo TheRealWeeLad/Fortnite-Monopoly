@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3 uid="uid://c8nkdelaa7r41"]
+
+[ext_resource type="Texture2D" uid="uid://bmvtu1pvqnqgo" path="res://assets/board/board-full.webp" id="1_6lvoo"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_vkvv6"]
+size = Vector3(9, 9, 0.0591431)
+
+[node name="Game" type="Node3D"]
+
+[node name="Board" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Board"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.83187e-15, -0.0157776)
+shape = SubResource("BoxShape3D_vkvv6")
+
+[node name="Sprite3D" type="Sprite3D" parent="Board"]
+texture = ExtResource("1_6lvoo")
