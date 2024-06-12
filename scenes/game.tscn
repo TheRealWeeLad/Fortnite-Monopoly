@@ -36,3 +36,7 @@ shape = SubResource("BoxShape3D_vkvv6")
 
 [node name="Sprite3D" type="Sprite3D" parent="Board"]
 texture = ExtResource("1_6lvoo")
+
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
+unique_name_in_owner = true
+spawn_path = NodePath("..")

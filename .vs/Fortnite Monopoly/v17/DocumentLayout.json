@@ -3,8 +3,8 @@
   "WorkspaceRootPath": "D:\\Other Stuff\\Godot Projects\\Fortnite Monopoly\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A94D0CC4-0288-4627-A5E6-618D15EAD238}|Fortnite Monopoly.csproj|d:\\other stuff\\godot projects\\fortnite monopoly\\scripts\\gamemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A94D0CC4-0288-4627-A5E6-618D15EAD238}|Fortnite Monopoly.csproj|solutionrelative:scripts\\gamemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{A94D0CC4-0288-4627-A5E6-618D15EAD238}|Fortnite Monopoly.csproj|d:\\other stuff\\godot projects\\fortnite monopoly\\scripts\\game.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A94D0CC4-0288-4627-A5E6-618D15EAD238}|Fortnite Monopoly.csproj|solutionrelative:scripts\\game.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A94D0CC4-0288-4627-A5E6-618D15EAD238}|Fortnite Monopoly.csproj|d:\\other stuff\\godot projects\\fortnite monopoly\\scripts\\lobbymanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -31,12 +31,12 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "GameManager.cs",
-              "DocumentMoniker": "D:\\Other Stuff\\Godot Projects\\Fortnite Monopoly\\scripts\\GameManager.cs",
-              "RelativeDocumentMoniker": "scripts\\GameManager.cs",
-              "ToolTip": "D:\\Other Stuff\\Godot Projects\\Fortnite Monopoly\\scripts\\GameManager.cs",
-              "RelativeToolTip": "scripts\\GameManager.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAABQAAAACAAAA",
+              "Title": "Game.cs",
+              "DocumentMoniker": "D:\\Other Stuff\\Godot Projects\\Fortnite Monopoly\\scripts\\Game.cs",
+              "RelativeDocumentMoniker": "scripts\\Game.cs",
+              "ToolTip": "D:\\Other Stuff\\Godot Projects\\Fortnite Monopoly\\scripts\\Game.cs",
+              "RelativeToolTip": "scripts\\Game.cs",
+              "ViewState": "AQIAABAAAAAAAAAAAAAAAB8AAAAyAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-06-10T18:22:13.062Z",
               "EditorCaption": ""
@@ -49,9 +49,10 @@
               "RelativeDocumentMoniker": "scripts\\Lobby.cs",
               "ToolTip": "D:\\Other Stuff\\Godot Projects\\Fortnite Monopoly\\scripts\\Lobby.cs",
               "RelativeToolTip": "scripts\\Lobby.cs",
-              "ViewState": "AQIAAC0AAAAAAAAAAAAAAC4AAAAbAAAA",
+              "ViewState": "AQIAAEgAAAAAAAAAAAAAAC4AAAAbAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-06-09T21:06:30.274Z"
+              "WhenOpened": "2024-06-09T21:06:30.274Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -61,9 +62,10 @@
               "RelativeDocumentMoniker": "scripts\\LobbyManager.cs",
               "ToolTip": "D:\\Other Stuff\\Godot Projects\\Fortnite Monopoly\\scripts\\LobbyManager.cs",
               "RelativeToolTip": "scripts\\LobbyManager.cs",
-              "ViewState": "AQIAAF0AAAAAAAAAAAAAAGwAAAAaAAAA",
+              "ViewState": "AQIAAF4AAAAAAAAAAAAIwGwAAAAsAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-06-09T20:12:53.175Z"
+              "WhenOpened": "2024-06-09T20:12:53.175Z",
+              "EditorCaption": ""
             }
           ]
         }
