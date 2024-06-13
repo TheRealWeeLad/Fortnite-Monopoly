@@ -4,12 +4,18 @@ using System.Threading;
 public partial class Game : Node
 {
 	PackedScene _playerScene;
+	MultiplayerSpawner _spawner;
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
 		// Load player scene
 		_playerScene = GD.Load<PackedScene>("res://scenes/player.tscn");
+		// Get reference to multiplayer spawner
+		_spawner = GetNode<MultiplayerSpawner>("%MultiplayerSpawner");
+
+		// TODO: Load All Cards
+		
 
 		// Tell server that this player is loaded
 		LobbyManager lobbyManager = GetNode<LobbyManager>("/root/LobbyManager");

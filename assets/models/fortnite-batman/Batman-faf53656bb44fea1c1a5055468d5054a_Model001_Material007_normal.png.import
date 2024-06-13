@@ -1,0 +1,38 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://6qh17kx0sqvu"
+path.s3tc="res://.godot/imported/Batman-faf53656bb44fea1c1a5055468d5054a_Model001_Material007_normal.png-d815b0626bfd62d76a979444a888ebc3.s3tc.ctex"
+metadata={
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
+}
+generator_parameters={
+"md5": "89e6656cd4892b51faf443b3efcbb992"
+}
+
+[deps]
+
+source_file="res://assets/models/fortnite-batman/Batman-faf53656bb44fea1c1a5055468d5054a_Model001_Material007_normal.png"
+dest_files=["res://.godot/imported/Batman-faf53656bb44fea1c1a5055468d5054a_Model001_Material007_normal.png-d815b0626bfd62d76a979444a888ebc3.s3tc.ctex"]
+
+[params]
+
+compress/mode=2
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=1
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=1
+roughness/src_normal="res://assets/models/fortnite-batman/Batman-faf53656bb44fea1c1a5055468d5054a_Model001_Material007_normal.png"
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=0
