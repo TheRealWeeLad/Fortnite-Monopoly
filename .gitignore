@@ -4,6 +4,10 @@
 # VS ignores
 .vs/
 
+# Autogen project files
+*.csproj
+*.sln
+
 # Godot-specific ignores
 .import/
 export.cfg
