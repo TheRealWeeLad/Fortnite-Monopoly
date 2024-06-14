@@ -8,6 +8,8 @@ public partial class Game : Node
 	PackedScene[] _characterModels;
 	Node3D[] _players;
 
+	int currentPlayer = 0;
+
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
@@ -39,6 +41,7 @@ public partial class Game : Node
 		Vector3 startDeltaX = new(0.5f, 0, 0);
 		Vector3 startDeltaZ = new(0, 0, 0.6f);
 		
+		// Place and assign character models
 		foreach ((int playerNum, int characterIdx) in playerCharacters)
 		{
 			Node3D character = _characterModels[characterIdx].Instantiate() as Node3D;
@@ -47,5 +50,7 @@ public partial class Game : Node
 			AddChild(character);
 			_players[playerNum] = character;
 		}
+
+		// TODO: Start turns
 	}
 }

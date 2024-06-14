@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://bcdvfkpvhiynw"]
+
+[ext_resource type="Texture2D" uid="uid://bxk6m1wbx4vyp" path="res://assets/visuals/card_icon.png" id="1_u5irv"]
+
+[node name="CardIcon" type="TextureRect"]
+offset_top = -140.0
+offset_right = 80.0
+offset_bottom = -20.0
+texture = ExtResource("1_u5irv")
+expand_mode = 1

@@ -1,7 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://f7183shddnao"]
-
-[ext_resource type="Texture2D" uid="uid://do4ojgjm65e02" path="res://assets/board/Placeholder.png" id="1_1kidv"]
-
-[node name="Location Card" type="Sprite3D"]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0)
-texture = ExtResource("1_1kidv")

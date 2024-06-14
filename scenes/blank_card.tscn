@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cu5iiillbnenb"]
+
+[ext_resource type="PackedScene" uid="uid://cw3asd85t3mmg" path="res://assets/models/blank_card.blend" id="1_faeee"]
+
+[node name="blank_card" instance=ExtResource("1_faeee")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, 0)

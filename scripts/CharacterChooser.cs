@@ -8,6 +8,7 @@ public partial class CharacterChooser : VBoxContainer
 	Label _timerText;
 	Timer _timer;
 	Game _game;
+	UIManager _uiManager;
 	MarginContainer _characterMenu;
 
 	Dictionary<int, int> chosenButtons = new();
@@ -38,6 +39,7 @@ public partial class CharacterChooser : VBoxContainer
 		_timerText = GetNode<Label>("%CharacterChooseTimerLabel");
 		_timer = GetNode<Timer>("%CharacterChooseTimer");
 		_game = GetNode<Game>("/root/Game");
+		_uiManager = GetNode<UIManager>("%UIManager");
 		_characterMenu = GetNode<MarginContainer>("%CharacterMenu");
 	}
 
@@ -55,12 +57,11 @@ public partial class CharacterChooser : VBoxContainer
 		_timerText.Text = "0";
 
 		// Start Game
+		_characterMenu.Visible = false;
 		if (Multiplayer.IsServer())
 		{
-			// Hide Menu
-			_characterMenu.Visible = false;
-
 			_game.Rpc("StartGame", chosenButtons);
+			_uiManager.Rpc("SpawnTurnUI");
 		}
 	}
 
