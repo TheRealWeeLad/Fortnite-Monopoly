@@ -9,24 +9,11 @@ public partial class LobbyManager : Node
 	public delegate void PlayerDisconnectedEventHandler(long id);
 	[Signal]
 	public delegate void ServerDisconnectedEventHandler();
+	[Signal]
+	public delegate void AllPlayersConnectedEventHandler();
 
-	public struct Player
-	{
-		readonly Godot.Collections.Dictionary _dict;
-
-		public string Name { get => _dict["Name"].AsString(); set => _dict["Name"] = value; }
-
-		public Player() => _dict = new();
-		public Player(Godot.Collections.Dictionary dict) => _dict = dict;
-
-		public static Player FromVariant(Variant var) => new(var.AsGodotDictionary());
-		public static implicit operator Variant(Player plr)
-		{
-			return plr._dict;
-		}
-	}
-	readonly Dictionary<long, Player> _players = new();
-	Player player = new() { Name = "Username" };
+	public static Dictionary<long, Player> Players { get; } = new();
+	readonly Player player = new() { Name = "Username", Order = 0 };
 
 	// Server info
 	const int PORT = 7000;
@@ -50,7 +37,7 @@ public partial class LobbyManager : Node
 	}
 
 	// Called when create button is pressed
-	void CreateLobby(string username)
+	public void CreateLobby(string username)
 	{
 		ENetMultiplayerPeer peer = new();
 		Error error = peer.CreateServer(PORT, MAX_CONNECTIONS);
@@ -63,13 +50,13 @@ public partial class LobbyManager : Node
 
 		// Add player to list
 		player.Name = username;
-		_players.Add(1, new() { Name = username });
+		Players.Add(1, new() { Name = username });
 
 		// Show Lobby
 		EmitSignal(SignalName.PlayerConnected, 1, username);
 	}
 	// Called when join button is pressed
-	void JoinLobby(string username, string ip)
+	public void JoinLobby(string username, string ip)
 	{
 		player.Name = username;
 
@@ -84,7 +71,7 @@ public partial class LobbyManager : Node
 		Multiplayer.MultiplayerPeer = peer;
 	}
 	// Called when start button is pressed
-	void StartGame() => Rpc(nameof(LoadGame));
+	public void StartGame() => Rpc(nameof(LoadGame));
 
 	// RPCs
 	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
@@ -92,7 +79,7 @@ public partial class LobbyManager : Node
 	{
 		Player plr = new(player);
 		int plrId = Multiplayer.GetRemoteSenderId();
-		_players.Add(plrId, plr);
+		Players.Add(plrId, plr);
 		EmitSignal(SignalName.PlayerConnected, plrId, plr.Name);
 	}
 	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
@@ -102,12 +89,17 @@ public partial class LobbyManager : Node
 	{
 		if (Multiplayer.IsServer())
 		{
+			// The first to load in is Player 1
+			long id = Multiplayer.GetRemoteSenderId();
+			Player loadedPlayer = Players[id];
+			loadedPlayer.Order = playersLoaded;
+			Players[id] = loadedPlayer;
+
 			playersLoaded++;
-			if (playersLoaded == _players.Count)
+			if (playersLoaded == Players.Count)
 			{
 				// START GAME
-				Game game = GetNode<Game>("/root/Game");
-				game.Rpc("StartGame");
+				EmitSignal(SignalName.AllPlayersConnected);
 			}
 		}
 	}
@@ -119,13 +111,13 @@ public partial class LobbyManager : Node
 	}
 	void OnPlayerDisconnected(long id)
 	{
-		_players.Remove(id);
+		Players.Remove(id);
 		EmitSignal(SignalName.PlayerDisconnected, id);
 	}
 	void OnConnectedSuccess()
 	{
 		long id = Multiplayer.GetUniqueId();
-		_players[id] = player;
+		Players[id] = player;
 		EmitSignal(SignalName.PlayerConnected, id, player.Name);
 	}
 	void OnConnectedFail()
@@ -135,14 +127,14 @@ public partial class LobbyManager : Node
 	void OnServerDisconnected()
 	{
 		Multiplayer.MultiplayerPeer = null;
-		_players.Clear();
+		Players.Clear();
 		EmitSignal(SignalName.ServerDisconnected);
 	}
 
 
 
 	// DEBUG
-	void CreateDebug()
+	public void CreateDebug()
 	{
 		ENetMultiplayerPeer peer = new();
 		Error error = peer.CreateServer(PORT, MAX_CONNECTIONS);
@@ -150,12 +142,12 @@ public partial class LobbyManager : Node
 
 		// Add player to list
 		player.Name = "HOST";
-		_players.Add(1, new() { Name = "HOST" });
+		Players.Add(1, new() { Name = "HOST" });
 
 		// Show Lobby
 		EmitSignal(SignalName.PlayerConnected, 1, "HOST");
 	}
-	void JoinDebug()
+	public void JoinDebug()
 	{
 		player.Name = "CLIENT";
 
@@ -168,5 +160,22 @@ public partial class LobbyManager : Node
 		}
 
 		Multiplayer.MultiplayerPeer = peer;
+	}
+}
+
+public readonly struct Player
+{
+	readonly Godot.Collections.Dictionary _dict;
+
+	public readonly string Name { get => _dict["Name"].AsString(); set => _dict["Name"] = value; }
+	public readonly int Order { get => _dict["Order"].AsInt32(); set => _dict["Order"] = value; }
+
+	public Player() => _dict = new();
+	public Player(Godot.Collections.Dictionary dict) => _dict = dict;
+
+	public static Player FromVariant(Variant var) => new(var.AsGodotDictionary());
+	public static implicit operator Variant(Player plr)
+	{
+		return plr._dict;
 	}
 }

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://brcilnvopy580"]
+
+[ext_resource type="PackedScene" uid="uid://bu2gjqeajdfak" path="res://assets/models/fortnite_travis_scott/TravisScott.fbx" id="1_537vs"]
+
+[node name="TravisScott" instance=ExtResource("1_537vs")]
+transform = Transform3D(0.65, 0, 0, 0, 0.65, 0, 0, 0, 0.65, 0, 0, 0)

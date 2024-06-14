@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cwcs8gf0wp1yt"]
+
+[ext_resource type="PackedScene" uid="uid://b0ouekuudyw3n" path="res://assets/models/fortnite-batman/Batman.fbx" id="1_q33ba"]
+
+[node name="Batman" instance=ExtResource("1_q33ba")]
+transform = Transform3D(0.75, 0, 0, 0, 0.75, 0, 0, 0, 0.75, 0, 0, 0)

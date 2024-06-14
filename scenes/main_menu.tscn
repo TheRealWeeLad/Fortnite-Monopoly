@@ -1,7 +1,6 @@
-[gd_scene load_steps=4 format=3 uid="uid://611yoiuahrwr"]
+[gd_scene load_steps=3 format=3 uid="uid://611yoiuahrwr"]
 
 [ext_resource type="Texture2D" uid="uid://bq81y2wjwhgwo" path="res://assets/visuals/background.jpg" id="1_lm2po"]
-[ext_resource type="PackedScene" uid="uid://4x6khr08rb5k" path="res://scenes/lobby_manager.tscn" id="2_8bvu6"]
 [ext_resource type="Script" path="res://scripts/Lobby.cs" id="2_iaept"]
 
 [node name="Main Menu" type="Node"]
@@ -82,11 +81,13 @@ text = "Create Lobby"
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/Screen/VBoxContainer/Tabs/Create Lobby/VBoxContainer"]
 layout_mode = 2
 
-[node name="Button" type="Button" parent="CanvasLayer/Screen/VBoxContainer/Tabs/Create Lobby/VBoxContainer/HBoxContainer"]
+[node name="Debug Create" type="Button" parent="CanvasLayer/Screen/VBoxContainer/Tabs/Create Lobby/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Create"
 
-[node name="Button2" type="Button" parent="CanvasLayer/Screen/VBoxContainer/Tabs/Create Lobby/VBoxContainer/HBoxContainer"]
+[node name="Debug Join" type="Button" parent="CanvasLayer/Screen/VBoxContainer/Tabs/Create Lobby/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Join"
 
@@ -180,16 +181,6 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 48
 text = "Leave Lobby"
 
-[node name="LobbyManager" parent="." instance=ExtResource("2_8bvu6")]
-
 [connection signal="pressed" from="CanvasLayer/Screen/VBoxContainer/Tabs/Create Lobby/VBoxContainer/Create Button" to="CanvasLayer/Screen/VBoxContainer/Lobby" method="CreateLobby"]
-[connection signal="pressed" from="CanvasLayer/Screen/VBoxContainer/Tabs/Create Lobby/VBoxContainer/HBoxContainer/Button" to="LobbyManager" method="CreateDebug"]
-[connection signal="pressed" from="CanvasLayer/Screen/VBoxContainer/Tabs/Create Lobby/VBoxContainer/HBoxContainer/Button2" to="LobbyManager" method="JoinDebug"]
 [connection signal="pressed" from="CanvasLayer/Screen/VBoxContainer/Tabs/Join Lobby/VBoxContainer/Join Button" to="CanvasLayer/Screen/VBoxContainer/Lobby" method="JoinLobby"]
-[connection signal="CreateMultiplayerLobby" from="CanvasLayer/Screen/VBoxContainer/Lobby" to="LobbyManager" method="CreateLobby"]
-[connection signal="JoinMultiplayerLobby" from="CanvasLayer/Screen/VBoxContainer/Lobby" to="LobbyManager" method="JoinLobby"]
-[connection signal="pressed" from="CanvasLayer/Screen/VBoxContainer/Lobby/MarginContainer/Lobby Container/Buttons/Start Button" to="LobbyManager" method="StartGame"]
 [connection signal="pressed" from="CanvasLayer/Screen/VBoxContainer/Lobby/MarginContainer/Lobby Container/Buttons/Leave Button" to="CanvasLayer/Screen/VBoxContainer/Lobby" method="LeaveLobby"]
-[connection signal="PlayerConnected" from="LobbyManager" to="CanvasLayer/Screen/VBoxContainer/Lobby" method="PlayerConnected"]
-[connection signal="PlayerDisconnected" from="LobbyManager" to="CanvasLayer/Screen/VBoxContainer/Lobby" method="PlayerDisconnected"]
-[connection signal="ServerDisconnected" from="LobbyManager" to="CanvasLayer/Screen/VBoxContainer/Lobby" method="ServerDisconnected"]

@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://cwoe63klmf4b4"]
+
+[ext_resource type="Texture2D" uid="uid://bjb5um00t2olr" path="res://assets/visuals/player1.png" id="1_mpt48"]
+
+[node name="ChoiceBorder" type="TextureRect"]
+offset_right = 175.0
+offset_bottom = 175.0
+texture = ExtResource("1_mpt48")

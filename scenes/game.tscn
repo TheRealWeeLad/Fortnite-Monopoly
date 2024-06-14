@@ -1,7 +1,14 @@
-[gd_scene load_steps=7 format=3 uid="uid://c8nkdelaa7r41"]
+[gd_scene load_steps=14 format=3 uid="uid://c8nkdelaa7r41"]
 
 [ext_resource type="Texture2D" uid="uid://bmvtu1pvqnqgo" path="res://assets/board/board-full.webp" id="1_6lvoo"]
 [ext_resource type="Script" path="res://scripts/Game.cs" id="1_fohef"]
+[ext_resource type="Texture2D" uid="uid://urmnrxyakkv8" path="res://assets/visuals/cuddle_team_leader.png" id="3_8jusb"]
+[ext_resource type="Script" path="res://scripts/UIManager.cs" id="3_b3mnn"]
+[ext_resource type="PackedScene" uid="uid://b6wdfc658xf5d" path="res://scenes/player.tscn" id="3_n6f50"]
+[ext_resource type="Texture2D" uid="uid://dw12uhrxhbcdx" path="res://assets/visuals/batman.png" id="5_iowtc"]
+[ext_resource type="Script" path="res://scripts/CharacterChooser.cs" id="5_ww336"]
+[ext_resource type="Texture2D" uid="uid://b7rwqj66xhgk1" path="res://assets/visuals/banana.jpg" id="6_h4e7l"]
+[ext_resource type="Texture2D" uid="uid://bb5b8hclsym0f" path="res://assets/visuals/travis-scott.jpg" id="7_cupty"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_pkbdq"]
 sky_top_color = Color(0.230734, 0.323635, 0.715973, 1)
@@ -37,6 +44,101 @@ shape = SubResource("BoxShape3D_vkvv6")
 [node name="Sprite3D" type="Sprite3D" parent="Board"]
 texture = ExtResource("1_6lvoo")
 
-[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
+[node name="Player" parent="." instance=ExtResource("3_n6f50")]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="UIManager" type="Node" parent="CanvasLayer"]
 unique_name_in_owner = true
-spawn_path = NodePath("..")
+script = ExtResource("3_b3mnn")
+
+[node name="CharacterMenu" type="MarginContainer" parent="CanvasLayer"]
+unique_name_in_owner = true
+offset_right = 1920.0
+offset_bottom = 1080.0
+theme_override_constants/margin_left = 160
+theme_override_constants/margin_top = 180
+theme_override_constants/margin_right = 160
+theme_override_constants/margin_bottom = 180
+
+[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/CharacterMenu"]
+layout_mode = 2
+
+[node name="Choose Text" type="Label" parent="CanvasLayer/CharacterMenu/PanelContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 64
+text = "Choose Character"
+horizontal_alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/CharacterMenu/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 600
+theme_override_constants/margin_top = 160
+theme_override_constants/margin_right = 600
+theme_override_constants/margin_bottom = 20
+
+[node name="CharacterChooser" type="VBoxContainer" parent="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 50
+script = ExtResource("5_ww336")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser"]
+layout_mode = 2
+theme_override_constants/separation = 50
+
+[node name="CuddleTeamLeaderButton" type="TextureButton" parent="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(175, 175)
+layout_mode = 2
+texture_normal = ExtResource("3_8jusb")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="BatmanButton" type="TextureButton" parent="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(175, 175)
+layout_mode = 2
+texture_normal = ExtResource("5_iowtc")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser"]
+layout_mode = 2
+theme_override_constants/separation = 50
+
+[node name="BananaButton" type="TextureButton" parent="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser/HBoxContainer2"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(175, 175)
+layout_mode = 2
+texture_normal = ExtResource("6_h4e7l")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="TravisScottButton" type="TextureButton" parent="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser/HBoxContainer2"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(175, 175)
+layout_mode = 2
+texture_normal = ExtResource("7_cupty")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="CharacterChooseTimerLabel" type="Label" parent="CanvasLayer/CharacterMenu/PanelContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 8
+theme_override_font_sizes/font_size = 128
+text = "3"
+horizontal_alignment = 1
+
+[node name="CharacterChooseTimer" type="Timer" parent="CanvasLayer/CharacterMenu/PanelContainer/CharacterChooseTimerLabel"]
+unique_name_in_owner = true
+wait_time = 3.0
+one_shot = true
+
+[connection signal="pressed" from="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser/HBoxContainer/CuddleTeamLeaderButton" to="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser" method="CuddleChosen"]
+[connection signal="pressed" from="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser/HBoxContainer/BatmanButton" to="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser" method="BatmanChosen"]
+[connection signal="pressed" from="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser/HBoxContainer2/BananaButton" to="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser" method="BananaChosen"]
+[connection signal="pressed" from="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser/HBoxContainer2/TravisScottButton" to="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser" method="TravisChosen"]
+[connection signal="timeout" from="CanvasLayer/CharacterMenu/PanelContainer/CharacterChooseTimerLabel/CharacterChooseTimer" to="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser" method="Timeout"]

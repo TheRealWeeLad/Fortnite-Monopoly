@@ -9,6 +9,7 @@ public partial class Lobby : PanelContainer
 	[Signal]
 	public delegate void JoinMultiplayerLobbyEventHandler(string username, string ip);
 
+	LobbyManager lobbyManager;
 	PackedScene lobbyMemberScene;
 	PanelContainer lobby;
 	VBoxContainer lobbyContainer;
@@ -26,6 +27,7 @@ public partial class Lobby : PanelContainer
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
+		lobbyManager = GetTree().Root.GetNode<LobbyManager>("LobbyManager");
 		lobbyMemberScene = GD.Load<PackedScene>("res://scenes/lobby_member.tscn");
 		lobby = GetNode<PanelContainer>("%Lobby");
 		lobbyContainer = GetNode<VBoxContainer>("%Lobby Container");
@@ -35,6 +37,26 @@ public partial class Lobby : PanelContainer
 		createNameField = GetNode<TextEdit>("%Create Name Field");
 		joinNameField = GetNode<TextEdit>("%Join Name Field");
 		ipField = GetNode<TextEdit>("%IP Field");
+
+		// Connect signals
+		lobbyManager.PlayerConnected += PlayerConnected;
+		lobbyManager.PlayerDisconnected += PlayerDisconnected;
+		lobbyManager.ServerDisconnected += ServerDisconnected;
+		// Signals to lobby manager
+		GetNode<Button>("%Start Button").Pressed += lobbyManager.StartGame;
+		CreateMultiplayerLobby += lobbyManager.CreateLobby;
+		JoinMultiplayerLobby += lobbyManager.JoinLobby;
+		// DEBUG
+		GetNode<Button>("%Debug Create").Pressed += lobbyManager.CreateDebug;
+		GetNode<Button>("%Debug Join").Pressed += lobbyManager.JoinDebug;
+	}
+	// Called when this object is unloaded
+	public override void _ExitTree()
+	{
+		// Reset Autoload Signals
+		lobbyManager.PlayerConnected -= PlayerConnected;
+		lobbyManager.PlayerDisconnected -= PlayerDisconnected;
+		lobbyManager.ServerDisconnected -= ServerDisconnected;
 	}
 
 	// Called when Create Lobby button pressed

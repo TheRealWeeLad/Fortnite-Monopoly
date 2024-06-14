@@ -1,21 +1,29 @@
 using Godot;
+using Godot.Collections;
 using System.Threading;
 
 public partial class Game : Node
 {
 	PackedScene _playerScene;
-	MultiplayerSpawner _spawner;
+	PackedScene[] _characterModels;
+	Node3D[] _players;
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
 		// Load player scene
 		_playerScene = GD.Load<PackedScene>("res://scenes/player.tscn");
-		// Get reference to multiplayer spawner
-		_spawner = GetNode<MultiplayerSpawner>("%MultiplayerSpawner");
+		// Load character models
+		PackedScene cuddle = GD.Load<PackedScene>("res://scenes/cuddle_team_leader.tscn");
+		PackedScene batman = GD.Load<PackedScene>("res://scenes/batman.tscn");
+		PackedScene banana = GD.Load<PackedScene>("res://scenes/banana.tscn");
+		PackedScene travis = GD.Load<PackedScene>("res://scenes/travis_scott.tscn");
+		_characterModels = new PackedScene[] { cuddle, batman, banana, travis };
+		_players = new Node3D[LobbyManager.Players.Count];
 
 		// TODO: Load All Cards
 		
+		// TODO: Reconnect Signals for connecting/disconnecting
 
 		// Tell server that this player is loaded
 		LobbyManager lobbyManager = GetNode<LobbyManager>("/root/LobbyManager");
@@ -23,18 +31,21 @@ public partial class Game : Node
 		lobbyManager.RpcId(1, "LoadPlayer");
 	}
 
-	// Called once per frame
-	public override void _Process(double delta)
-	{
-		
-	}
-
-	// Called when Server receives verification that all players have connected
+	// Called after character selection
 	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
-	void StartGame()
+	void StartGame(Dictionary<int, int> playerCharacters)
 	{
-		Node3D player = _playerScene.Instantiate() as Node3D;
-		AddChild(player);
-		(player.GetChild(0) as Camera3D).Current = true;
+		Vector3 startPosition = new(3.6f, 0, 3.5f);
+		Vector3 startDeltaX = new(0.5f, 0, 0);
+		Vector3 startDeltaZ = new(0, 0, 0.6f);
+		
+		foreach ((int playerNum, int characterIdx) in playerCharacters)
+		{
+			Node3D character = _characterModels[characterIdx].Instantiate() as Node3D;
+			character.Name = $"Player{playerNum + 1}";
+			character.Position = startPosition + playerNum / 2 * startDeltaX + playerNum % 2 * startDeltaZ;
+			AddChild(character);
+			_players[playerNum] = character;
+		}
 	}
 }

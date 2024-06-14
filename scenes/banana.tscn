@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dwyfu5vk5esmw"]
+
+[ext_resource type="PackedScene" uid="uid://dgfhdladcjk0q" path="res://assets/models/fortnite-banana/BananaDancing.fbx" id="1_v1ei2"]
+
+[node name="Banana" instance=ExtResource("1_v1ei2")]
+transform = Transform3D(0.65, 0, 0, 0, 0.65, 0, 0, 0, 0.65, 0, 0, 0)
