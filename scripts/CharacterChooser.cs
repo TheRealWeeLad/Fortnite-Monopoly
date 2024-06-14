@@ -75,16 +75,31 @@ public partial class CharacterChooser : VBoxContainer
 	void Choose(int idx)
 	{
 		TextureButton buttonChosen = _choiceButtons[idx];
-		// Fail if button has already been chosen
-		if (buttonChosen.GetChildCount() > 0) return;
 
 		// Get reference to player
 		long id = Multiplayer.GetRemoteSenderId();
 		int playerOrder = LobbyManager.Players[id].Order;
 
+		// Fail or unselect if button has already been chosen
+		if (buttonChosen.GetChildCount() > 0)
+		{
+			if (chosenButtons[playerOrder] == idx)
+			{
+				Rpc(nameof(RemoveBorder), idx);
+				chosenButtons.Remove(playerOrder);
+				numChosen--;
+				// Stop timer if active
+				Rpc(nameof(StopTimer));
+			}
+			return;
+		}
+
 		// Remove previous border if there was one
 		if (chosenButtons.TryGetValue(playerOrder, out int previous))
+		{
 			Rpc(nameof(RemoveBorder), previous);
+			numChosen--; // Keep numChosen the same
+		}
 
 		// Add new border
 		Rpc(nameof(AddBorder), playerOrder, idx);
@@ -101,6 +116,12 @@ public partial class CharacterChooser : VBoxContainer
 	{
 		_timerText.Visible = true;
 		_timer.Start();
+	}
+	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+	void StopTimer()
+	{
+		_timerText.Visible = false;
+		_timer.Stop();
 	}
 	// RPCs to emulate MultiplayerSpawner under several paths
 	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
