@@ -1,14 +1,19 @@
 using Godot;
 using Godot.Collections;
+using System.Linq;
 using System.Threading;
 
 public partial class Game : Node
 {
+	[Signal]
+	public delegate void TurnStartedEventHandler(long playerId);
+
 	PackedScene _playerScene;
 	PackedScene[] _characterModels;
 	Node3D[] _players;
+	long[] _turnOrder;
 
-	int currentPlayer = 0;
+	int currentPlayerIdx = 0;
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
@@ -29,7 +34,6 @@ public partial class Game : Node
 
 		// Tell server that this player is loaded
 		LobbyManager lobbyManager = GetNode<LobbyManager>("/root/LobbyManager");
-		Thread.Sleep(10); // Give time for LobbyManager to recognize game is loaded
 		lobbyManager.RpcId(1, "LoadPlayer");
 	}
 
@@ -51,6 +55,12 @@ public partial class Game : Node
 			_players[playerNum] = character;
 		}
 
-		// TODO: Start turns
+		// Get turn order
+		_turnOrder = LobbyManager.Players.OrderBy(x => x.Value.Order).Select(x => x.Key).ToArray();
+
+		// Only server should begin the player's turn
+		if (Multiplayer.IsServer())
+			// Start 1st player's turn
+			EmitSignal(SignalName.TurnStarted, _turnOrder[currentPlayerIdx]);
 	}
 }

@@ -61,7 +61,7 @@ public partial class CharacterChooser : VBoxContainer
 		if (Multiplayer.IsServer())
 		{
 			_game.Rpc("StartGame", chosenButtons);
-			_uiManager.Rpc("SpawnTurnUI");
+			_uiManager.Rpc("SpawnTurnUI", chosenButtons);
 		}
 	}
 

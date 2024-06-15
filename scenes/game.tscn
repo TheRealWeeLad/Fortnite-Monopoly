@@ -163,35 +163,37 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 64
 text = "Turn 0"
 
-[node name="BottomRow" type="MarginContainer" parent="CanvasLayer/TurnUI"]
+[node name="TurnActions" type="MarginContainer" parent="CanvasLayer/TurnUI"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 8
 theme_override_constants/margin_left = 815
 theme_override_constants/margin_right = 25
 theme_override_constants/margin_bottom = 25
 
-[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/TurnUI/BottomRow"]
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/TurnUI/TurnActions"]
 layout_mode = 2
 theme_override_constants/separation = 505
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/TurnUI/BottomRow/HBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/TurnUI/TurnActions/HBoxContainer"]
 layout_mode = 2
 
-[node name="RollButton" type="Button" parent="CanvasLayer/TurnUI/BottomRow/HBoxContainer/VBoxContainer"]
+[node name="RollButton" type="Button" parent="CanvasLayer/TurnUI/TurnActions/HBoxContainer/VBoxContainer"]
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 48
 text = "Roll"
 
-[node name="VBoxContainer2" type="VBoxContainer" parent="CanvasLayer/TurnUI/BottomRow/HBoxContainer"]
+[node name="VBoxContainer2" type="VBoxContainer" parent="CanvasLayer/TurnUI/TurnActions/HBoxContainer"]
 layout_mode = 2
 
-[node name="UseCardsButton" type="Button" parent="CanvasLayer/TurnUI/BottomRow/HBoxContainer/VBoxContainer2"]
+[node name="UseCardsButton" type="Button" parent="CanvasLayer/TurnUI/TurnActions/HBoxContainer/VBoxContainer2"]
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 48
 text = "Use Cards"
 
+[connection signal="TurnStarted" from="." to="CanvasLayer/UIManager" method="BeginTurn"]
 [connection signal="pressed" from="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser/HBoxContainer/CuddleTeamLeaderButton" to="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser" method="CuddleChosen"]
 [connection signal="pressed" from="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser/HBoxContainer/BatmanButton" to="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser" method="BatmanChosen"]
 [connection signal="pressed" from="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser/HBoxContainer2/BananaButton" to="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser" method="BananaChosen"]

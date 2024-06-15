@@ -13,7 +13,7 @@ public partial class LobbyManager : Node
 	public delegate void AllPlayersConnectedEventHandler();
 
 	public static Dictionary<long, Player> Players { get; } = new();
-	readonly Player player = new() { Name = "Username", Order = 0 };
+	readonly Player player = new() { Name = "Username", Order = 0, Health = 15 };
 
 	// Server info
 	const int PORT = 7000;
@@ -142,7 +142,7 @@ public partial class LobbyManager : Node
 
 		// Add player to list
 		player.Name = "HOST";
-		Players.Add(1, new() { Name = "HOST" });
+		Players.Add(1, player);
 
 		// Show Lobby
 		EmitSignal(SignalName.PlayerConnected, 1, "HOST");
@@ -169,6 +169,7 @@ public readonly struct Player
 
 	public readonly string Name { get => _dict["Name"].AsString(); set => _dict["Name"] = value; }
 	public readonly int Order { get => _dict["Order"].AsInt32(); set => _dict["Order"] = value; }
+	public readonly int Health { get => _dict["Health"].AsInt32(); set => _dict["Health"] = value; }
 
 	public Player() => _dict = new();
 	public Player(Godot.Collections.Dictionary dict) => _dict = dict;
@@ -177,5 +178,10 @@ public readonly struct Player
 	public static implicit operator Variant(Player plr)
 	{
 		return plr._dict;
+	}
+
+	public override string ToString()
+	{
+		return $"Player {Order}: {Name}, {Health} health";
 	}
 }
