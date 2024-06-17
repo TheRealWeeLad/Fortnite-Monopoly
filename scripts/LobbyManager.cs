@@ -1,5 +1,8 @@
 using Godot;
+using Godot.NativeInterop;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 
 public partial class LobbyManager : Node
 {
@@ -87,6 +90,7 @@ public partial class LobbyManager : Node
 	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
 	void LoadPlayer()
 	{
+		// Only server controls game starting
 		if (Multiplayer.IsServer())
 		{
 			// The first to load in is Player 1
@@ -94,14 +98,26 @@ public partial class LobbyManager : Node
 			Player loadedPlayer = Players[id];
 			loadedPlayer.Order = playersLoaded;
 			Players[id] = loadedPlayer;
-
+			
 			playersLoaded++;
 			if (playersLoaded == Players.Count)
 			{
+				// Synchronize Players dict for all clients
+				Rpc(nameof(SynchronizePlayers), Players.Keys.ToArray(), PlayerArrayToVariant(Players.Values.ToArray()));
 				// START GAME
 				EmitSignal(SignalName.AllPlayersConnected);
 			}
 		}
+	}
+	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+	void SynchronizePlayers(long[] ids, Godot.Collections.Array players)
+	{
+		Players.Clear();
+		for (int i = 0; i < ids.Length; i++)
+		{
+			Players[ids[i]] = players[i].AsGodotDictionary();
+		}
+		
 	}
 
 	// Multiplayer Event Handlers
@@ -132,6 +148,17 @@ public partial class LobbyManager : Node
 	}
 
 
+	// Convert array to Godot Array
+	public static Godot.Collections.Array PlayerArrayToVariant(Player[] arr)
+	{
+		Godot.Collections.Array varArr = new();
+		for (int i = 0; i < arr.Length; i++)
+		{
+			varArr.Add(arr[i]);
+		}
+		return varArr;
+	}
+
 
 	// DEBUG
 	public void CreateDebug()
@@ -161,6 +188,9 @@ public partial class LobbyManager : Node
 
 		Multiplayer.MultiplayerPeer = peer;
 	}
+	public void Debug(Variant w) => RpcId(1, nameof(DebugLog), w);
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+	public static void DebugLog(Variant w) => GD.Print(w);
 }
 
 public readonly struct Player
@@ -175,10 +205,8 @@ public readonly struct Player
 	public Player(Godot.Collections.Dictionary dict) => _dict = dict;
 
 	public static Player FromVariant(Variant var) => new(var.AsGodotDictionary());
-	public static implicit operator Variant(Player plr)
-	{
-		return plr._dict;
-	}
+	public static implicit operator Variant(Player plr) => plr._dict;
+	public static implicit operator Player(Godot.Collections.Dictionary var) => new Player(var);
 
 	public override string ToString()
 	{

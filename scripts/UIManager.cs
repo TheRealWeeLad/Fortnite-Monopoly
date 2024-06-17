@@ -1,5 +1,4 @@
 using Godot;
-using System.Linq;
 
 public partial class UIManager : Node
 {
@@ -7,6 +6,7 @@ public partial class UIManager : Node
 	MarginContainer _characterMenu;
 	SplitContainer _turnUI;
 	MarginContainer _turnActions;
+	Label _turnCounter;
 	PackedScene _playerHealth;
 	VBoxContainer _playerHealthContainer;
 	PackedScene _turnAnnouncement;
@@ -23,6 +23,7 @@ public partial class UIManager : Node
 		_characterMenu = GetNode<MarginContainer>("%CharacterMenu");
 		_turnUI = GetNode<SplitContainer>("%TurnUI");
 		_turnActions = GetNode<MarginContainer>("%TurnActions");
+		_turnCounter = GetNode<Label>("%TurnCount");
 		_playerHealth = GD.Load<PackedScene>("res://scenes/player_health.tscn");
 		_playerHealthContainer = GetNode<VBoxContainer>("%PlayerHealths");
 		_turnAnnouncement = GD.Load<PackedScene>("res://scenes/turn_announcement.tscn");
@@ -51,19 +52,18 @@ public partial class UIManager : Node
 
 	// Called when characters have been chosen
 	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
-	void SpawnTurnUI(Godot.Collections.Dictionary<int, int> playerCharacters)
+	void SpawnTurnUI(Godot.Collections.Dictionary<long, int> playerCharacters)
 	{
 		_turnUI.Visible = true;
-		HideTurnActions(); // Disable turn actions until it's their turn
 
-		// Add player health scenes, sort to get in correct order
-		string[] playerNames = LobbyManager.Players.OrderBy(x => x.Value.Order).Select(x => x.Value.Name).ToArray();
-		for (int player = 0; player < playerNames.Length; player++)
+		// Add player health scenes
+		foreach ((long id, Player player) in LobbyManager.Players)
 		{
+			int order = player.Order;
 			TextureRect playerHealth = _playerHealth.Instantiate() as TextureRect;
-			playerHealth.Texture = _characterIcons[playerCharacters[player]];
-			(playerHealth.GetChild(0) as Label).Text = playerNames[player];
-			_healthBars[player] = playerHealth.GetChild(1) as TextureProgressBar;
+			playerHealth.Texture = _characterIcons[playerCharacters[id]];
+			(playerHealth.GetChild(0) as Label).Text = player.Name;
+			_healthBars[order] = playerHealth.GetChild(1) as TextureProgressBar;
 
 			_playerHealthContainer.AddChild(playerHealth);
 		}
@@ -74,13 +74,17 @@ public partial class UIManager : Node
 	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
 	void ShowTurnAnnouncement(long playerId, Godot.Collections.Dictionary playerDict)
 	{
+		// Update turn counter
+		UpdateTurnCounter();
+
 		Player player = new(playerDict);
-		if (Multiplayer.GetUniqueId() == playerId) ShowTurnActions();
+		// Only let the active player use turn actions
+		if (Multiplayer.GetUniqueId() != playerId) HideTurnActions();
 
 		CenterContainer announcement = _turnAnnouncement.Instantiate() as CenterContainer;
 		Label text = announcement.GetChild(0) as Label;
 		text.Text = $"{player.Name}'s Turn";
-		text.AddThemeColorOverride("Font Color", _playerColors[player.Order]);
+		text.AddThemeColorOverride("font_color", _playerColors[player.Order]);
 
 		AddChild(announcement);
 		// Delete object as soon as animation finishes
@@ -89,4 +93,5 @@ public partial class UIManager : Node
 
 	void ShowTurnActions() => _turnActions.Visible = true;
 	void HideTurnActions() => _turnActions.Visible = false;
+	void UpdateTurnCounter() => _turnCounter.Text = $"Turn {Game.CurrentTurn}";
 }

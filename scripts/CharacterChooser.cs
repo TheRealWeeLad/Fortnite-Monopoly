@@ -11,7 +11,7 @@ public partial class CharacterChooser : VBoxContainer
 	UIManager _uiManager;
 	MarginContainer _characterMenu;
 
-	Dictionary<int, int> chosenButtons = new();
+	Dictionary<long, int> chosenButtons = new();
 
 	// Choice prefab
 	PackedScene _choiceScene;
@@ -83,10 +83,10 @@ public partial class CharacterChooser : VBoxContainer
 		// Fail or unselect if button has already been chosen
 		if (buttonChosen.GetChildCount() > 0)
 		{
-			if (chosenButtons[playerOrder] == idx)
+			if (chosenButtons[id] == idx)
 			{
 				Rpc(nameof(RemoveBorder), idx);
-				chosenButtons.Remove(playerOrder);
+				chosenButtons.Remove(id);
 				numChosen--;
 				// Stop timer if active
 				Rpc(nameof(StopTimer));
@@ -95,14 +95,14 @@ public partial class CharacterChooser : VBoxContainer
 		}
 
 		// Remove previous border if there was one
-		if (chosenButtons.TryGetValue(playerOrder, out int previous))
+		if (chosenButtons.TryGetValue(id, out int previous))
 		{
 			Rpc(nameof(RemoveBorder), previous);
 			numChosen--; // Keep numChosen the same
 		}
 
 		// Add new border
-		Rpc(nameof(AddBorder), playerOrder, idx);
+		Rpc(nameof(AddBorder), id, playerOrder, idx);
 
 		numChosen++;
 
@@ -125,7 +125,7 @@ public partial class CharacterChooser : VBoxContainer
 	}
 	// RPCs to emulate MultiplayerSpawner under several paths
 	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
-	void AddBorder(int order, int idx)
+	void AddBorder(long id, int order, int idx)
 	{
 		// Instantiate choice border under correct texture button
 		TextureRect border = _choiceScene.Instantiate() as TextureRect;
@@ -133,7 +133,8 @@ public partial class CharacterChooser : VBoxContainer
 
 		// Set overlay to correct number
 		border.Texture = _choiceBorders[order];
-		chosenButtons[order] = idx;
+		if (Multiplayer.IsServer())
+			chosenButtons[id] = idx;
 	}
 	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
 	void RemoveBorder(int idx) => _choiceButtons[idx].GetChild(0).QueueFree();

@@ -154,11 +154,11 @@ theme_override_constants/separation = 1570
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="TurnCount" type="VBoxContainer" parent="CanvasLayer/TurnUI/TopRow"]
-unique_name_in_owner = true
+[node name="TurnCountContainer" type="VBoxContainer" parent="CanvasLayer/TurnUI/TopRow"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="CanvasLayer/TurnUI/TopRow/TurnCount"]
+[node name="TurnCount" type="Label" parent="CanvasLayer/TurnUI/TopRow/TurnCountContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 64
 text = "Turn 0"

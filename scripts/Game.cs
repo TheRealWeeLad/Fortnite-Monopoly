@@ -1,7 +1,6 @@
 using Godot;
-using Godot.Collections;
+using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 
 public partial class Game : Node
 {
@@ -14,6 +13,7 @@ public partial class Game : Node
 	long[] _turnOrder;
 
 	int currentPlayerIdx = 0;
+	public static int CurrentTurn { get; private set; } = 0;
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
@@ -34,20 +34,21 @@ public partial class Game : Node
 
 		// Tell server that this player is loaded
 		LobbyManager lobbyManager = GetNode<LobbyManager>("/root/LobbyManager");
-		lobbyManager.RpcId(1, "LoadPlayer");
+		lobbyManager.Rpc("LoadPlayer");
 	}
 
 	// Called after character selection
 	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
-	void StartGame(Dictionary<int, int> playerCharacters)
+	void StartGame(Godot.Collections.Dictionary<long, int> playerCharacters)
 	{
 		Vector3 startPosition = new(3.6f, 0, 3.5f);
 		Vector3 startDeltaX = new(0.5f, 0, 0);
 		Vector3 startDeltaZ = new(0, 0, 0.6f);
 		
 		// Place and assign character models
-		foreach ((int playerNum, int characterIdx) in playerCharacters)
+		foreach ((long playerId, int characterIdx) in playerCharacters)
 		{
+			int playerNum = LobbyManager.Players[playerId].Order;
 			Node3D character = _characterModels[characterIdx].Instantiate() as Node3D;
 			character.Name = $"Player{playerNum + 1}";
 			character.Position = startPosition + playerNum / 2 * startDeltaX + playerNum % 2 * startDeltaZ;
@@ -59,6 +60,7 @@ public partial class Game : Node
 		_turnOrder = LobbyManager.Players.OrderBy(x => x.Value.Order).Select(x => x.Key).ToArray();
 
 		// Only server should begin the player's turn
+		CurrentTurn++;
 		if (Multiplayer.IsServer())
 			// Start 1st player's turn
 			EmitSignal(SignalName.TurnStarted, _turnOrder[currentPlayerIdx]);
