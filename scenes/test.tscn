@@ -1,0 +1,47 @@
+[gd_scene load_steps=8 format=3 uid="uid://ca140hioyn0ma"]
+
+[ext_resource type="Texture2D" uid="uid://bmvtu1pvqnqgo" path="res://assets/board/board-full.webp" id="1_vgksb"]
+[ext_resource type="PackedScene" uid="uid://cg64epg2mjln2" path="res://scenes/dice.tscn" id="2_pjcmi"]
+[ext_resource type="PackedScene" uid="uid://cp226eyyxyxut" path="res://scenes/goofy_dice.tscn" id="3_1t14w"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hscwc"]
+size = Vector3(9, 0.01, 9)
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_3fupw"]
+sky_top_color = Color(0.230734, 0.323635, 0.715973, 1)
+sky_horizon_color = Color(0.780156, 0.581384, 0.710132, 1)
+ground_bottom_color = Color(0.259611, 0.194093, 0.054475, 1)
+ground_horizon_color = Color(0.346319, 0.741201, 0.563573, 1)
+
+[sub_resource type="Sky" id="Sky_xulxi"]
+sky_material = SubResource("ProceduralSkyMaterial_3fupw")
+
+[sub_resource type="Environment" id="Environment_5etkp"]
+background_mode = 2
+sky = SubResource("Sky_xulxi")
+tonemap_mode = 2
+glow_enabled = true
+
+[node name="Test" type="Node3D"]
+
+[node name="Area3D" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
+shape = SubResource("BoxShape3D_hscwc")
+
+[node name="Sprite3D" type="Sprite3D" parent="Area3D"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0)
+texture = ExtResource("1_vgksb")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.724172, 0.68962, 0, -0.68962, 0.724172, 0, 5, 8)
+
+[node name="Dice" parent="." instance=ExtResource("2_pjcmi")]
+
+[node name="goofy_dice" parent="." instance=ExtResource("3_1t14w")]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_5etkp")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.965926, -1.13133e-08, 0.258819, -0.258819, -4.2222e-08, 0.965926, 0, -1, -4.37114e-08, 2.65955, 4.42818, 0)

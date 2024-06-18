@@ -9,6 +9,8 @@ public partial class Game : Node
 
 	PackedScene _playerScene;
 	PackedScene[] _characterModels;
+	PackedScene _dice;
+	PackedScene _goofyDice;
 	Node3D[] _players;
 	long[] _turnOrder;
 
@@ -26,7 +28,10 @@ public partial class Game : Node
 		PackedScene banana = GD.Load<PackedScene>("res://scenes/banana.tscn");
 		PackedScene travis = GD.Load<PackedScene>("res://scenes/travis_scott.tscn");
 		_characterModels = new PackedScene[] { cuddle, batman, banana, travis };
-		_players = new Node3D[LobbyManager.Players.Count];
+		// Load dice
+		_dice = GD.Load<PackedScene>("res://scenes/dice.tscn");
+		_goofyDice = GD.Load<PackedScene>("res://scenes/goofy_dice.tscn");
+		_players = new Node3D[4]; // Allocate 4 players in case someone joins halfway
 
 		// TODO: Load All Cards
 		
@@ -64,5 +69,20 @@ public partial class Game : Node
 		if (Multiplayer.IsServer())
 			// Start 1st player's turn
 			EmitSignal(SignalName.TurnStarted, _turnOrder[currentPlayerIdx]);
+	}
+
+	// Called when Roll button is pressed
+	void Roll()
+	{
+		Rpc(nameof(SpawnDice));
+	}
+	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+	void SpawnDice()
+	{
+		// Spawn dice
+		RigidBody3D die = _dice.Instantiate() as RigidBody3D;
+		AddChild(die);
+		RigidBody3D goofyDie = _goofyDice.Instantiate() as RigidBody3D;
+		AddChild(goofyDie);
 	}
 }

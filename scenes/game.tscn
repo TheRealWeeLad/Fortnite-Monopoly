@@ -16,12 +16,12 @@ sky_horizon_color = Color(0.780156, 0.581384, 0.710132, 1)
 ground_bottom_color = Color(0.259611, 0.194093, 0.054475, 1)
 ground_horizon_color = Color(0.346319, 0.741201, 0.563573, 1)
 
-[sub_resource type="Sky" id="Sky_xulxi"]
+[sub_resource type="Sky" id="Sky_j4v6a"]
 sky_material = SubResource("ProceduralSkyMaterial_pkbdq")
 
 [sub_resource type="Environment" id="Environment_i3td8"]
 background_mode = 2
-sky = SubResource("Sky_xulxi")
+sky = SubResource("Sky_j4v6a")
 tonemap_mode = 2
 glow_enabled = true
 
@@ -34,7 +34,7 @@ script = ExtResource("1_fohef")
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_i3td8")
 
-[node name="Board" type="Area3D" parent="."]
+[node name="Board" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Board"]
@@ -193,9 +193,13 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 48
 text = "Use Cards"
 
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.965926, -1.13133e-08, 0.258819, -0.258819, -4.2222e-08, 0.965926, 0, -1, -4.37114e-08, 2.65955, 4.42818, 0)
+
 [connection signal="TurnStarted" from="." to="CanvasLayer/UIManager" method="BeginTurn"]
 [connection signal="pressed" from="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser/HBoxContainer/CuddleTeamLeaderButton" to="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser" method="CuddleChosen"]
 [connection signal="pressed" from="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser/HBoxContainer/BatmanButton" to="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser" method="BatmanChosen"]
 [connection signal="pressed" from="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser/HBoxContainer2/BananaButton" to="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser" method="BananaChosen"]
 [connection signal="pressed" from="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser/HBoxContainer2/TravisScottButton" to="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser" method="TravisChosen"]
 [connection signal="timeout" from="CanvasLayer/CharacterMenu/PanelContainer/CharacterChooseTimerLabel/CharacterChooseTimer" to="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser" method="Timeout"]
+[connection signal="pressed" from="CanvasLayer/TurnUI/TurnActions/HBoxContainer/VBoxContainer/RollButton" to="." method="Roll"]
