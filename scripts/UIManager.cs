@@ -10,6 +10,8 @@ public partial class UIManager : Node
 	PackedScene _playerHealth;
 	VBoxContainer _playerHealthContainer;
 	PackedScene _turnAnnouncement;
+	PackedScene _healthIndicator;
+	Game _game;
 
 	Color[] _playerColors = new Color[] { Color.FromHtml("e43131"), Color.FromHtml("31e431"),
 										  Color.FromHtml("33b5e1"), Color.FromHtml("f6f932") };
@@ -28,6 +30,7 @@ public partial class UIManager : Node
 		_playerHealthContainer = GetNode<VBoxContainer>("%PlayerHealths");
 		_turnAnnouncement = GD.Load<PackedScene>("res://scenes/turn_announcement.tscn");
 		_healthBars = new TextureProgressBar[LobbyManager.Players.Count];
+		_healthIndicator = GD.Load<PackedScene>("res://scenes/health_change.tscn");
 
 		// Get character icons
 		Texture2D cuddle = GD.Load<Texture2D>("res://assets/visuals/cuddle_team_leader.png");
@@ -38,6 +41,8 @@ public partial class UIManager : Node
 
 		// Connect signals
 		_lobbyManager.AllPlayersConnected += PlayersConnected;
+		_game = GetNode<Game>("/root/Game");
+		_game.HealthChanged += UpdateHealthBar;
 	}
 
 	// Called when all players are connected in game
@@ -63,7 +68,10 @@ public partial class UIManager : Node
 			TextureRect playerHealth = _playerHealth.Instantiate() as TextureRect;
 			playerHealth.Texture = _characterIcons[playerCharacters[id]];
 			(playerHealth.GetChild(0) as Label).Text = player.Name;
-			_healthBars[order] = playerHealth.GetChild(1) as TextureProgressBar;
+			TextureProgressBar healthBar = playerHealth.GetChild(1) as TextureProgressBar;
+			healthBar.Value = player.Health;
+			(healthBar.GetChild(0) as Label).Text = player.Health.ToString();
+			_healthBars[order] = healthBar;
 
 			_playerHealthContainer.AddChild(playerHealth);
 		}
@@ -94,4 +102,24 @@ public partial class UIManager : Node
 	void ShowTurnActions() => _turnActions.Visible = true;
 	void HideTurnActions() => _turnActions.Visible = false;
 	void UpdateTurnCounter() => _turnCounter.Text = $"Turn {Game.CurrentTurn}";
+
+	void UpdateHealthBar(int playerOrder, int health, bool increased) =>
+		Rpc(nameof(UpdateHealthRpc), playerOrder, health, increased);
+	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+	void UpdateHealthRpc(int playerOrder, int health, bool increased)
+	{
+		Node3D playerModel = _game.players[playerOrder];
+		// Update health bar
+		TextureProgressBar healthBar = _healthBars[playerOrder];
+		healthBar.Value = health;
+		(healthBar.GetChild(0) as Label).Text = health.ToString();
+
+		// Spawn health indicator
+		Label3D healthIndicator = _healthIndicator.Instantiate() as Label3D;
+		HealthIndicator script = healthIndicator as HealthIndicator;
+		script.SetPositions(playerModel.GlobalPosition.Y + 1.3f, playerModel.GlobalPosition.Y + 1.6f);
+		healthIndicator.Modulate = increased ? Color.FromHtml("00ff00ff") : Color.FromHtml("ff0000ff");
+		playerModel.AddChild(healthIndicator);
+		healthIndicator.Scale = playerModel.Scale.Inverse();
+	}
 }

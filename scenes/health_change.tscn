@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3 uid="uid://c45ym5ymno7ni"]
+
+[ext_resource type="Script" path="res://scripts/HealthIndicator.cs" id="1_q5f37"]
+
+[node name="HealthChange" type="Label3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+text = "+1"
+font_size = 48
+outline_size = 24
+script = ExtResource("1_q5f37")
+
+[node name="Timer" type="Timer" parent="."]
+
+[connection signal="timeout" from="Timer" to="." method="Timeout"]

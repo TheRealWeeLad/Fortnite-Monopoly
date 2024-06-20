@@ -1,6 +1,6 @@
 [gd_scene load_steps=10 format=3 uid="uid://cg64epg2mjln2"]
 
-[ext_resource type="Script" path="res://scripts/Dice.cs" id="1_ntjje"]
+[ext_resource type="Script" path="res://scripts/NormalDice.cs" id="1_dguoe"]
 [ext_resource type="Texture2D" uid="uid://cw814t342q0ru" path="res://assets/models/dice/textures/default_baseColor.png" id="1_pebfv"]
 [ext_resource type="Texture2D" uid="uid://binujedn84fcl" path="res://assets/models/dice/textures/default_normal.png" id="2_kunk2"]
 
@@ -64,7 +64,7 @@ properties/1/replication_mode = 1
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 1, 3)
 physics_material_override = SubResource("PhysicsMaterial_o4sfx")
 inertia = Vector3(0.1, 0.1, 0.1)
-script = ExtResource("1_ntjje")
+script = ExtResource("1_dguoe")
 
 [node name="Object_2" type="MeshInstance3D" parent="."]
 transform = Transform3D(0.02, 0, 0, 0, -8.74228e-10, 0.02, 0, -0.02, -8.74228e-10, 0, -3.38813e-21, -3.38813e-21)

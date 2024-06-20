@@ -1,8 +1,6 @@
 using Godot;
-using Godot.NativeInterop;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 
 public partial class LobbyManager : Node
 {
@@ -16,7 +14,7 @@ public partial class LobbyManager : Node
 	public delegate void AllPlayersConnectedEventHandler();
 
 	public static Dictionary<long, Player> Players { get; } = new();
-	readonly Player player = new() { Name = "Username", Order = 0, Health = 15 };
+	readonly Player player = new() { Name = "Username", Order = 0, Health = 10 };
 
 	// Server info
 	const int PORT = 7000;
@@ -103,21 +101,22 @@ public partial class LobbyManager : Node
 			if (playersLoaded == Players.Count)
 			{
 				// Synchronize Players dict for all clients
-				Rpc(nameof(SynchronizePlayers), Players.Keys.ToArray(), PlayerArrayToVariant(Players.Values.ToArray()));
+				SynchronizePlayers();
 				// START GAME
 				EmitSignal(SignalName.AllPlayersConnected);
 			}
 		}
 	}
+	public void SynchronizePlayers() => 
+		Rpc(nameof(SynchronizePlayersRpc), Players.Keys.ToArray(), PlayerArrayToVariant(Players.Values.ToArray()));
 	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
-	void SynchronizePlayers(long[] ids, Godot.Collections.Array players)
+	void SynchronizePlayersRpc(long[] ids, Godot.Collections.Array players)
 	{
 		Players.Clear();
 		for (int i = 0; i < ids.Length; i++)
 		{
 			Players[ids[i]] = players[i].AsGodotDictionary();
 		}
-		
 	}
 
 	// Multiplayer Event Handlers

@@ -1,14 +1,13 @@
 using Godot;
 
-public partial class Dice : RigidBody3D
+public abstract partial class Dice : RigidBody3D
 {
-	int frameNumber = 0;
+	[Signal]
+	public delegate void DiceRolledEventHandler(int faceFunc);
 
-	// Called when the node enters the scene tree for the first time.
-	public override void _Ready()
-	{
-		
-	}
+	int _frameNumber = 0;
+	bool _finished = false;
+	public bool SimulatePhysics { get; set; } = false; // Only simulate physics on server
 
 	void ApplyForces()
 	{
@@ -28,12 +27,36 @@ public partial class Dice : RigidBody3D
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _PhysicsProcess(double delta)
 	{
-		// Only simulate physics on server
-		//if (!Multiplayer.IsServer()) return;
+		if (!SimulatePhysics) return;
+		if (_finished) return;
 
 		// Wait for inertia to be calculated before applying forces
-		if (frameNumber == 1) ApplyForces();
+		if (_frameNumber == 1) ApplyForces();
 
-		frameNumber++;
+		// Check velocity, and find orientation when it is stationary
+		if (LinearVelocity.Length() <= 0.01f && AngularVelocity.Length() <= 0.01f && _frameNumber > 0)
+		{
+			CheckOrientation();
+		}
+
+		_frameNumber++;
 	}
+
+	void CheckOrientation()
+	{
+		// Measure dot products to see which direction is pointed either Up or Down
+		Vector3 dots = new(Basis.Tdotx(Vector3.Up), Basis.Tdoty(Vector3.Up), Basis.Tdotz(Vector3.Up));
+
+		// Use dot products to convert 1 or -1 to the corresponding face
+		int xFace = (int)(3.5f * Mathf.Abs(dots.X) + dots.X * -1.5f);
+		int yFace = (int)(3.5f * Mathf.Abs(dots.Y) + dots.Y * 0.5f);
+		int zFace = (int)(3.5f * Mathf.Abs(dots.Z) + dots.Z * -2.5f);
+
+		int num = GetOrientationResult(xFace != 0 ? xFace : yFace != 0 ? yFace : zFace);
+
+		EmitSignal(SignalName.DiceRolled, num);
+		_finished = true;
+	}
+
+	protected abstract int GetOrientationResult(int face);
 }

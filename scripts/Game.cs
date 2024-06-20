@@ -1,4 +1,5 @@
 using Godot;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -6,13 +7,19 @@ public partial class Game : Node
 {
 	[Signal]
 	public delegate void TurnStartedEventHandler(long playerId);
+	[Signal]
+	public delegate void HealthChangedEventHandler(int playerOrder, int health, bool increased);
+
+	LobbyManager _lobbyManager;
 
 	PackedScene _playerScene;
 	PackedScene[] _characterModels;
 	PackedScene _dice;
 	PackedScene _goofyDice;
-	Node3D[] _players;
+	// Allocate 4 players in case someone joins halfway
+	public readonly Node3D[] players = new Node3D[4];
 	long[] _turnOrder;
+	Action[] _diceFuncs;
 
 	int currentPlayerIdx = 0;
 	public static int CurrentTurn { get; private set; } = 0;
@@ -31,15 +38,15 @@ public partial class Game : Node
 		// Load dice
 		_dice = GD.Load<PackedScene>("res://scenes/dice.tscn");
 		_goofyDice = GD.Load<PackedScene>("res://scenes/goofy_dice.tscn");
-		_players = new Node3D[4]; // Allocate 4 players in case someone joins halfway
+		_diceFuncs = new Action[4] { Heal, Shoot, BoogieBomb, Wall };
 
 		// TODO: Load All Cards
-		
+
 		// TODO: Reconnect Signals for connecting/disconnecting
 
 		// Tell server that this player is loaded
-		LobbyManager lobbyManager = GetNode<LobbyManager>("/root/LobbyManager");
-		lobbyManager.Rpc("LoadPlayer");
+		_lobbyManager = GetNode<LobbyManager>("/root/LobbyManager");
+		_lobbyManager.Rpc("LoadPlayer");
 	}
 
 	// Called after character selection
@@ -49,7 +56,7 @@ public partial class Game : Node
 		Vector3 startPosition = new(3.6f, 0, 3.5f);
 		Vector3 startDeltaX = new(0.5f, 0, 0);
 		Vector3 startDeltaZ = new(0, 0, 0.6f);
-		
+
 		// Place and assign character models
 		foreach ((long playerId, int characterIdx) in playerCharacters)
 		{
@@ -58,7 +65,7 @@ public partial class Game : Node
 			character.Name = $"Player{playerNum + 1}";
 			character.Position = startPosition + playerNum / 2 * startDeltaX + playerNum % 2 * startDeltaZ;
 			AddChild(character);
-			_players[playerNum] = character;
+			players[playerNum] = character;
 		}
 
 		// Get turn order
@@ -72,17 +79,61 @@ public partial class Game : Node
 	}
 
 	// Called when Roll button is pressed
-	void Roll()
-	{
-		Rpc(nameof(SpawnDice));
-	}
+	void Roll() => Rpc(nameof(SpawnDice));
 	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
 	void SpawnDice()
 	{
 		// Spawn dice
 		RigidBody3D die = _dice.Instantiate() as RigidBody3D;
+		if (Multiplayer.IsServer())
+		{
+			NormalDice dieDice = die as NormalDice;
+			dieDice.DiceRolled += ReadNormalDice;
+			dieDice.SimulatePhysics = true;
+		}
 		AddChild(die);
+
 		RigidBody3D goofyDie = _goofyDice.Instantiate() as RigidBody3D;
+		if (Multiplayer.IsServer())
+		{
+			GoofyDice goofyDieDice = goofyDie as GoofyDice;
+			goofyDieDice.DiceRolled += ReadGoofyDice;
+			goofyDieDice.SimulatePhysics = true;
+		}
 		AddChild(goofyDie);
+	}
+
+	void ReadNormalDice(int num)
+	{
+		int numSpaces = num + 1;
+	}
+	/// <param name="funcIdx">0: Heal, 1: Shoot, 2: Boogie Bomb, 3: Wall</param>
+	void ReadGoofyDice(int funcIdx)
+	{
+		_diceFuncs[funcIdx].Invoke();
+	}
+
+	void Heal()
+	{
+		Player player = LobbyManager.Players[_turnOrder[currentPlayerIdx]];
+		if (player.Health == 15) return; // Can't go over 15 health
+
+		player.Health = Math.Clamp(player.Health + 1, 0, 15);
+		// Update player on all clients
+		_lobbyManager.SynchronizePlayers();
+
+		EmitSignal(SignalName.HealthChanged, currentPlayerIdx, player.Health, true);
+	}
+	void Shoot()
+	{
+		
+	}
+	void BoogieBomb()
+	{
+		
+	}
+	void Wall()
+	{
+		
 	}
 }
