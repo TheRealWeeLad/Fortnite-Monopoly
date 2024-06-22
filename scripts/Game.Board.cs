@@ -1,5 +1,6 @@
 ﻿using Godot;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 public partial class Game : Node
@@ -27,8 +28,8 @@ public partial class Game : Node
         _rolledNumber = num + 1;
 
         // Wait for goofy dice to finish rolling
-        EmitSignal(SignalName.GoofyFunctionReady);
         _goofyReady = true;
+        EmitSignal(SignalName.GoofyFunctionReady);
         if (!_goofyFinished) await ToSignal(this, SignalName.GoofyFunctionFinished);
 
         int spacesToMove = _wallSpace > 0 ? _wallSpace : _rolledNumber;
@@ -43,15 +44,14 @@ public partial class Game : Node
 
         _diceFuncs[funcIdx].Invoke();
 
-        EmitSignal(SignalName.GoofyFunctionFinished);
         _goofyReady = false;
         _goofyFinished = true;
+        EmitSignal(SignalName.GoofyFunctionFinished);
     }
 
     void HealDice()
     {
         long id = _turnOrder[_currentPlayer.Order];
-        GD.Print("HEAL");
         ChangeHealth(id, 1);
     }
     void Shoot()
@@ -64,7 +64,8 @@ public partial class Game : Node
 
         // Hit every other player
         long thisPlayerId = _turnOrder[_currentPlayer.Order];
-        foreach (long playerId in LobbyManager.Players.Keys)
+        // Convert Player keys to array to prevent error due to collection modification from synchronizing players O_O
+        foreach (long playerId in LobbyManager.Players.Keys.ToArray())
             if (playerId != thisPlayerId) ChangeHealth(playerId, -1);
     }
     void Wall()
@@ -103,7 +104,7 @@ public partial class Game : Node
             finalPosition = midPoint;
         }
         else overflow = numSpaces;
-        finalPosition += _distanceBetweenSpaces * overflow * _directions[newSpace / 8];
+        finalPosition += _distanceBetweenSpaces * overflow * _directions[newSpace / 8 % 4];
 
         anim.TrackInsertKey(posTrack, anim.Length, finalPosition);
         animPlayer.Play(animName);
@@ -133,6 +134,8 @@ public partial class Game : Node
         }
 
         _board[player.Space].Invoke();
+
+        Rpc(nameof(EndTurn));
     }
 
     // Space Functions

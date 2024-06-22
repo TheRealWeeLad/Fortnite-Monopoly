@@ -1,7 +1,6 @@
 using Godot;
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 
 public partial class Game : Node
 {
@@ -16,6 +15,8 @@ public partial class Game : Node
 	PackedScene[] _characterModels;
 	PackedScene _dice;
 	PackedScene _goofyDice;
+	// Store dice to remove them when next turn starts
+	RigidBody3D[] _diceModels = new RigidBody3D[2];
 	// Allocate 4 players in case someone joins halfway
 	public readonly Node3D[] players = new Node3D[4];
 	long[] _turnOrder;
@@ -61,14 +62,15 @@ public partial class Game : Node
 	void StartGame(Godot.Collections.Dictionary<long, int> playerCharacters)
 	{
 		Vector3 startPosition = new(_distanceBetweenSpaces * 4, 0, 3.5f);
-		Vector3 startDeltaZ = new(0, 0, 0.6f);
+		// Vector3 startDeltaX = new(0.6f, 0, 0);
+		// Vector3 startDeltaZ = new(0, 0, 0.6f);
 
 		// Place and assign character models
 		foreach ((long playerId, int characterIdx) in playerCharacters)
 		{
 			int playerNum = LobbyManager.Players[playerId].Order;
 			Node3D character = _characterModels[characterIdx].Instantiate() as Node3D;
-			character.Position = startPosition + playerNum % 2 * startDeltaZ;
+			character.Position = startPosition; // + playerNum / 2 * startDeltaX + playerNum % 2 * startDeltaZ;
 			AddChild(character);
 			players[playerNum] = character;
 		}
@@ -87,11 +89,12 @@ public partial class Game : Node
 
 	// Called when Roll button is pressed
 	void Roll() => Rpc(nameof(SpawnDice));
-	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
 	void SpawnDice()
 	{
 		// Spawn dice
 		RigidBody3D die = _dice.Instantiate() as RigidBody3D;
+		_diceModels[0] = die;
 		if (Multiplayer.IsServer())
 		{
 			NormalDice dieDice = die as NormalDice;
@@ -101,6 +104,7 @@ public partial class Game : Node
 		AddChild(die);
 
 		RigidBody3D goofyDie = _goofyDice.Instantiate() as RigidBody3D;
+		_diceModels[1] = goofyDie;
 		if (Multiplayer.IsServer())
 		{
 			GoofyDice goofyDieDice = goofyDie as GoofyDice;
@@ -108,6 +112,21 @@ public partial class Game : Node
 			goofyDieDice.SimulatePhysics = true;
 		}
 		AddChild(goofyDie);
+	}
+
+	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+	void EndTurn()
+	{
+		// Remove dice from playing field
+		for (int i = 0; i < 2; i++) _diceModels[i].QueueFree();
+
+		// Increment current player and turn
+		int currentOrder = (_currentPlayer.Order + 1) % LobbyManager.Players.Count;
+		long currentId = _turnOrder[currentOrder];
+		_currentPlayer = LobbyManager.Players[currentId];
+		CurrentTurn++;
+
+		if (Multiplayer.IsServer()) EmitSignal(SignalName.TurnStarted, currentId);
 	}
 
 	void ChangeHealth(long playerId, int health)

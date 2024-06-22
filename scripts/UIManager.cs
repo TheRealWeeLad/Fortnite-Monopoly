@@ -88,7 +88,7 @@ public partial class UIManager : Node
 
 		Player player = new(playerDict);
 		// Only let the active player use turn actions
-		if (Multiplayer.GetUniqueId() != playerId) HideTurnActions();
+		if (Multiplayer.GetUniqueId() == playerId) ShowTurnActions();
 
 		CenterContainer announcement = _turnAnnouncement.Instantiate() as CenterContainer;
 		Label text = announcement.GetChild(0) as Label;

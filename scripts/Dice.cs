@@ -14,7 +14,7 @@ public abstract partial class Dice : RigidBody3D
 		RandomNumberGenerator rng = new();
 		// Apply force for movement
 		float strength = rng.RandfRange(1, 6);
-		float randDirStrength = rng.RandfRange(-1, 1);
+		float randDirStrength = rng.RandfRange(-0.8f, 0.8f);
 		Vector3 dir = (Vector3.Up + Vector3.Forward + Vector3.Right * randDirStrength).Normalized();
 		ApplyImpulse(strength * dir);
 

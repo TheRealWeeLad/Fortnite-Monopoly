@@ -165,6 +165,7 @@ text = "Turn 0"
 
 [node name="TurnActions" type="MarginContainer" parent="CanvasLayer/TurnUI"]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 size_flags_vertical = 8
 theme_override_constants/margin_left = 815
@@ -203,3 +204,4 @@ transform = Transform3D(0.965926, -1.13133e-08, 0.258819, -0.258819, -4.2222e-08
 [connection signal="pressed" from="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser/HBoxContainer2/TravisScottButton" to="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser" method="TravisChosen"]
 [connection signal="timeout" from="CanvasLayer/CharacterMenu/PanelContainer/CharacterChooseTimerLabel/CharacterChooseTimer" to="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser" method="Timeout"]
 [connection signal="pressed" from="CanvasLayer/TurnUI/TurnActions/HBoxContainer/VBoxContainer/RollButton" to="." method="Roll"]
+[connection signal="pressed" from="CanvasLayer/TurnUI/TurnActions/HBoxContainer/VBoxContainer/RollButton" to="CanvasLayer/UIManager" method="HideTurnActions"]
