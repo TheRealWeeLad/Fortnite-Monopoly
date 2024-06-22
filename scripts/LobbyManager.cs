@@ -14,7 +14,7 @@ public partial class LobbyManager : Node
 	public delegate void AllPlayersConnectedEventHandler();
 
 	public static Dictionary<long, Player> Players { get; } = new();
-	readonly Player player = new() { Name = "Username", Order = 0, Health = 10 };
+	readonly Player player = new() { Name = "Username", Order = 0, Health = 10, Space = 0 };
 
 	// Server info
 	const int PORT = 7000;
@@ -199,6 +199,7 @@ public readonly struct Player
 	public readonly string Name { get => _dict["Name"].AsString(); set => _dict["Name"] = value; }
 	public readonly int Order { get => _dict["Order"].AsInt32(); set => _dict["Order"] = value; }
 	public readonly int Health { get => _dict["Health"].AsInt32(); set => _dict["Health"] = value; }
+	public readonly int Space { get => _dict["Space"].AsInt32(); set => _dict["Space"] = value; }
 
 	public Player() => _dict = new();
 	public Player(Godot.Collections.Dictionary dict) => _dict = dict;

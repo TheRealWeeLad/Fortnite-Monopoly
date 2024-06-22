@@ -1,4 +1,5 @@
 using Godot;
+using System;
 
 public partial class UIManager : Node
 {
@@ -111,11 +112,14 @@ public partial class UIManager : Node
 		Node3D playerModel = _game.players[playerOrder];
 		// Update health bar
 		TextureProgressBar healthBar = _healthBars[playerOrder];
+		int healthChange = health - (int)healthBar.Value;
 		healthBar.Value = health;
 		(healthBar.GetChild(0) as Label).Text = health.ToString();
 
 		// Spawn health indicator
 		Label3D healthIndicator = _healthIndicator.Instantiate() as Label3D;
+		string oper = healthChange > 0 ? "+" : "-";
+		healthIndicator.Text = oper + Math.Abs(healthChange).ToString();
 		HealthIndicator script = healthIndicator as HealthIndicator;
 		script.SetPositions(playerModel.GlobalPosition.Y + 1.3f, playerModel.GlobalPosition.Y + 1.6f);
 		healthIndicator.Modulate = increased ? Color.FromHtml("00ff00ff") : Color.FromHtml("ff0000ff");
