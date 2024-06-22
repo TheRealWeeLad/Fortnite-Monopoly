@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Linq;
 
 public partial class UIManager : Node
 {
@@ -63,7 +64,7 @@ public partial class UIManager : Node
 		_turnUI.Visible = true;
 
 		// Add player health scenes
-		foreach ((long id, Player player) in LobbyManager.Players)
+		foreach ((long id, Player player) in LobbyManager.Players.OrderBy(x => x.Value.Order))
 		{
 			int order = player.Order;
 			TextureRect playerHealth = _playerHealth.Instantiate() as TextureRect;
