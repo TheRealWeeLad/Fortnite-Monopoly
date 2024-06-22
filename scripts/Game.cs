@@ -37,7 +37,7 @@ public partial class Game : Node
 		// Load dice
 		_dice = GD.Load<PackedScene>("res://scenes/dice.tscn");
 		_goofyDice = GD.Load<PackedScene>("res://scenes/goofy_dice.tscn");
-		_diceFuncs = new Func<Task>[4] { HealDice, Shoot, BoogieBomb, Wall };
+		_diceFuncs = new Action[4] { HealDice, Shoot, BoogieBomb, Wall };
 
 		// Load board
 		_board = new Action[32] { Nothing, LocationSpace, Campfire, LocationSpace, Chest, LocationSpace,
@@ -113,12 +113,12 @@ public partial class Game : Node
 	void ChangeHealth(long playerId, int health)
 	{
 		Player player = LobbyManager.Players[playerId];
-		if (player.Health == 15) return; // Can't go over 15 health
+		if (player.Health == 15 && health > 0) return; // Can't go over 15 health
 
 		player.Health = Math.Clamp(player.Health + health, 0, 15);
 		// Update player on all clients
 		_lobbyManager.SynchronizePlayers();
 
-		EmitSignal(SignalName.HealthChanged, _currentPlayer.Order, player.Health, health > 0);
+		EmitSignal(SignalName.HealthChanged, player.Order, player.Health, health > 0);
 	}
 }
