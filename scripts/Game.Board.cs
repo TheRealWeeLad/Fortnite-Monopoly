@@ -1,7 +1,6 @@
 ﻿using Godot;
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 
 public partial class Game : Node
 {
@@ -9,6 +8,12 @@ public partial class Game : Node
     public delegate void GoofyFunctionFinishedEventHandler();
     [Signal]
     public delegate void GoofyFunctionReadyEventHandler();
+    [Signal]
+    public delegate void ShootingEventHandler(long shooterId);
+    [Signal]
+    public delegate void ShotEventHandler();
+    [Signal]
+    public delegate void DiceTaskFinishedEventHandler();
 
     enum Location { Paradise, Dusty, Tomato, Snobby, Viking, Retail, Lonely, Pleasant,
                     Flush, Wailing, Salty, Haunted, Greasy, Loot, Lazy, Tilted }
@@ -22,6 +27,7 @@ public partial class Game : Node
     Vector3[] _directions = { Vector3.Left, Vector3.Forward, Vector3.Right, Vector3.Back };
     bool _goofyReady = false;
     bool _goofyFinished = false;
+    bool _waitForDiceTask = false;
 
     async void ReadNormalDice(int num)
     {
@@ -43,6 +49,9 @@ public partial class Game : Node
         if (!_goofyReady) await ToSignal(this, SignalName.GoofyFunctionReady);
 
         _diceFuncs[funcIdx].Invoke();
+        // Wait for dice task to finish
+        if (_waitForDiceTask) await ToSignal(this, SignalName.DiceTaskFinished);
+        _waitForDiceTask = false;
 
         _goofyReady = false;
         _goofyFinished = true;
@@ -56,7 +65,22 @@ public partial class Game : Node
     }
     void Shoot()
     {
-        GD.Print("SHOOT");
+        EmitSignal(SignalName.Shooting, _turnOrder[_currentPlayer.Order]);
+        // Wait for player to be shot before continuing
+        _waitForDiceTask = true;
+    }
+    public void Shoot(long id)
+    {
+        // TODO: Apply active cards
+
+        EmitSignal(SignalName.Shot);
+        RpcId(1, nameof(OnShot), id);
+    }
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    void OnShot(long shotPlayerId)
+    {
+        ChangeHealth(shotPlayerId, -1);
+        EmitSignal(SignalName.DiceTaskFinished);
     }
     void BoogieBomb()
     {
@@ -77,7 +101,7 @@ public partial class Game : Node
     void MovePlayer(long playerId, int numSpaces)
     {
         Player player = LobbyManager.Players[playerId];
-        Node3D playerModel = players[player.Order];
+        Target playerModel = players[player.Order];
 
         AnimationPlayer animPlayer = playerModel.GetNode<AnimationPlayer>("AnimationPlayer");
         string animName = playerModel.Name.Equals("Banana") ? "M_MED_Banana_ao|M_MED_Banana_ao|M_MED_Banana_ao|Emote_Boogie_Down_Loop_CMM" :

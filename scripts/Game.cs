@@ -11,14 +11,13 @@ public partial class Game : Node
 
 	LobbyManager _lobbyManager;
 
-	PackedScene _playerScene;
 	PackedScene[] _characterModels;
 	PackedScene _dice;
 	PackedScene _goofyDice;
 	// Store dice to remove them when next turn starts
 	RigidBody3D[] _diceModels = new RigidBody3D[2];
 	// Allocate 4 players in case someone joins halfway
-	public readonly Node3D[] players = new Node3D[4];
+	public readonly Target[] players = new Target[4];
 	long[] _turnOrder;
 
 	Player _currentPlayer;
@@ -27,8 +26,6 @@ public partial class Game : Node
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		// Load player scene
-		_playerScene = GD.Load<PackedScene>("res://scenes/player.tscn");
 		// Load character models
 		PackedScene cuddle = GD.Load<PackedScene>("res://scenes/cuddle_team_leader.tscn");
 		PackedScene batman = GD.Load<PackedScene>("res://scenes/batman.tscn");
@@ -69,7 +66,12 @@ public partial class Game : Node
 		foreach ((long playerId, int characterIdx) in playerCharacters)
 		{
 			int playerNum = LobbyManager.Players[playerId].Order;
-			Node3D character = _characterModels[characterIdx].Instantiate() as Node3D;
+			Target character = _characterModels[characterIdx].Instantiate() as Target;
+			// Initialize player's targetability
+			character.SetId(playerId);
+			Shooting += character.BeginDetectingShots;
+			Shot += character.StopDetectingShots;
+			// Place character on Go
 			character.Position = startPosition; // + playerNum / 2 * startDeltaX + playerNum % 2 * startDeltaZ;
 			AddChild(character);
 			players[playerNum] = character;

@@ -9,6 +9,7 @@ public partial class UIManager : Node
 	SplitContainer _turnUI;
 	MarginContainer _turnActions;
 	Label _turnCounter;
+	Label _shootLabel;
 	PackedScene _playerHealth;
 	VBoxContainer _playerHealthContainer;
 	PackedScene _turnAnnouncement;
@@ -28,6 +29,7 @@ public partial class UIManager : Node
 		_turnUI = GetNode<SplitContainer>("%TurnUI");
 		_turnActions = GetNode<MarginContainer>("%TurnActions");
 		_turnCounter = GetNode<Label>("%TurnCount");
+		_shootLabel = GetNode<Label>("%ShootLabel");
 		_playerHealth = GD.Load<PackedScene>("res://scenes/player_health.tscn");
 		_playerHealthContainer = GetNode<VBoxContainer>("%PlayerHealths");
 		_turnAnnouncement = GD.Load<PackedScene>("res://scenes/turn_announcement.tscn");
@@ -104,13 +106,17 @@ public partial class UIManager : Node
 	void ShowTurnActions() => _turnActions.Visible = true;
 	void HideTurnActions() => _turnActions.Visible = false;
 	void UpdateTurnCounter() => _turnCounter.Text = $"Turn {Game.CurrentTurn}";
+	void ShowShootLabel(long playerId) => RpcId(playerId, nameof(ShowShootLabelRpc));
+	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+	void ShowShootLabelRpc() => _shootLabel.Visible = true;
+	void HideShootLabel() => _shootLabel.Visible = false;
 
 	void UpdateHealthBar(int playerOrder, int health, bool increased) =>
 		Rpc(nameof(UpdateHealthRpc), playerOrder, health, increased);
 	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
 	void UpdateHealthRpc(int playerOrder, int health, bool increased)
 	{
-		Node3D playerModel = _game.players[playerOrder];
+		Target playerModel = _game.players[playerOrder];
 		// Update health bar
 		TextureProgressBar healthBar = _healthBars[playerOrder];
 		int healthChange = health - (int)healthBar.Value;

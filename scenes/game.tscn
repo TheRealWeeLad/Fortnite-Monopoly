@@ -1,10 +1,9 @@
-[gd_scene load_steps=14 format=3 uid="uid://c8nkdelaa7r41"]
+[gd_scene load_steps=13 format=3 uid="uid://c8nkdelaa7r41"]
 
 [ext_resource type="Texture2D" uid="uid://bmvtu1pvqnqgo" path="res://assets/board/board-full.webp" id="1_6lvoo"]
 [ext_resource type="Script" path="res://scripts/Game.cs" id="1_fohef"]
 [ext_resource type="Texture2D" uid="uid://urmnrxyakkv8" path="res://assets/visuals/cuddle_team_leader.png" id="3_8jusb"]
 [ext_resource type="Script" path="res://scripts/UIManager.cs" id="3_b3mnn"]
-[ext_resource type="PackedScene" uid="uid://b6wdfc658xf5d" path="res://scenes/player.tscn" id="3_n6f50"]
 [ext_resource type="Texture2D" uid="uid://dw12uhrxhbcdx" path="res://assets/visuals/batman.png" id="5_iowtc"]
 [ext_resource type="Script" path="res://scripts/CharacterChooser.cs" id="5_ww336"]
 [ext_resource type="Texture2D" uid="uid://b7rwqj66xhgk1" path="res://assets/visuals/banana.jpg" id="6_h4e7l"]
@@ -34,6 +33,9 @@ script = ExtResource("1_fohef")
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_i3td8")
 
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.724172, 0.68962, 0, -0.68962, 0.724172, 0, 5, 8)
+
 [node name="Board" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0)
 
@@ -43,8 +45,6 @@ shape = SubResource("BoxShape3D_vkvv6")
 
 [node name="Sprite3D" type="Sprite3D" parent="Board"]
 texture = ExtResource("1_6lvoo")
-
-[node name="Player" parent="." instance=ExtResource("3_n6f50")]
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
@@ -163,6 +163,18 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 64
 text = "Turn 0"
 
+[node name="ShootLabel" type="Label" parent="CanvasLayer/TurnUI"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72549, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 20
+theme_override_font_sizes/font_size = 64
+text = "Choose Player to Shoot"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="TurnActions" type="MarginContainer" parent="CanvasLayer/TurnUI"]
 unique_name_in_owner = true
 visible = false
@@ -197,6 +209,8 @@ text = "Use Cards"
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.965926, -1.13133e-08, 0.258819, -0.258819, -4.2222e-08, 0.965926, 0, -1, -4.37114e-08, 2.65955, 4.42818, 0)
 
+[connection signal="Shooting" from="." to="CanvasLayer/UIManager" method="ShowShootLabel"]
+[connection signal="Shot" from="." to="CanvasLayer/UIManager" method="HideShootLabel"]
 [connection signal="TurnStarted" from="." to="CanvasLayer/UIManager" method="BeginTurn"]
 [connection signal="pressed" from="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser/HBoxContainer/CuddleTeamLeaderButton" to="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser" method="CuddleChosen"]
 [connection signal="pressed" from="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser/HBoxContainer/BatmanButton" to="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser" method="BatmanChosen"]
