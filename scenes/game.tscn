@@ -206,12 +206,34 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 48
 text = "Use Cards"
 
+[node name="WallChoices" type="CenterContainer" parent="CanvasLayer"]
+unique_name_in_owner = true
+visible = false
+offset_right = 1920.0
+offset_bottom = 1080.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/WallChoices"]
+layout_mode = 2
+
+[node name="NumberContainer" type="HBoxContainer" parent="CanvasLayer/WallChoices/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 37
+
+[node name="Label" type="Label" parent="CanvasLayer/WallChoices/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 25
+theme_override_font_sizes/font_size = 64
+text = "How many spaces do you want to move?"
+
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.965926, -1.13133e-08, 0.258819, -0.258819, -4.2222e-08, 0.965926, 0, -1, -4.37114e-08, 2.65955, 4.42818, 0)
 
 [connection signal="Shooting" from="." to="CanvasLayer/UIManager" method="ShowShootLabel"]
 [connection signal="Shot" from="." to="CanvasLayer/UIManager" method="HideShootLabel"]
 [connection signal="TurnStarted" from="." to="CanvasLayer/UIManager" method="BeginTurn"]
+[connection signal="WallRolled" from="." to="CanvasLayer/UIManager" method="ShowWallChoices"]
 [connection signal="pressed" from="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser/HBoxContainer/CuddleTeamLeaderButton" to="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser" method="CuddleChosen"]
 [connection signal="pressed" from="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser/HBoxContainer/BatmanButton" to="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser" method="BatmanChosen"]
 [connection signal="pressed" from="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser/HBoxContainer2/BananaButton" to="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser" method="BananaChosen"]

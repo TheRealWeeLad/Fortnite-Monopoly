@@ -10,6 +10,9 @@ public partial class UIManager : Node
 	MarginContainer _turnActions;
 	Label _turnCounter;
 	Label _shootLabel;
+	CenterContainer _wallChoices;
+	HBoxContainer _numberContainer;
+	PackedScene _numberButton;
 	PackedScene _playerHealth;
 	VBoxContainer _playerHealthContainer;
 	PackedScene _turnAnnouncement;
@@ -30,6 +33,9 @@ public partial class UIManager : Node
 		_turnActions = GetNode<MarginContainer>("%TurnActions");
 		_turnCounter = GetNode<Label>("%TurnCount");
 		_shootLabel = GetNode<Label>("%ShootLabel");
+		_wallChoices = GetNode<CenterContainer>("%WallChoices");
+		_numberContainer = GetNode<HBoxContainer>("%NumberContainer");
+		_numberButton = GD.Load<PackedScene>("res://scenes/number_button.tscn");
 		_playerHealth = GD.Load<PackedScene>("res://scenes/player_health.tscn");
 		_playerHealthContainer = GetNode<VBoxContainer>("%PlayerHealths");
 		_turnAnnouncement = GD.Load<PackedScene>("res://scenes/turn_announcement.tscn");
@@ -110,6 +116,27 @@ public partial class UIManager : Node
 	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
 	void ShowShootLabelRpc() => _shootLabel.Visible = true;
 	void HideShootLabel() => _shootLabel.Visible = false;
+	
+	void ShowWallChoices(long playerId, int numRolled) => RpcId(playerId, nameof(ShowWallChoicesRpc), numRolled);
+	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+	void ShowWallChoicesRpc(int numRolled)
+	{
+		// Clear number Container
+		foreach (Node button in _numberContainer.GetChildren()) button.QueueFree();
+
+		for (int i = 0; i <= numRolled; i++)
+		{
+			Button numberButton = _numberButton.Instantiate() as Button;
+			int space = i;
+			numberButton.Text = $" {space} ";
+			numberButton.Pressed += HideWallChoices;
+			numberButton.Pressed += () => _game.SetWallSpace(space);
+			_numberContainer.AddChild(numberButton);
+		}
+
+		_wallChoices.Visible = true;
+	}
+	void HideWallChoices() => _wallChoices.Visible = false;
 
 	void UpdateHealthBar(int playerOrder, int health, bool increased) =>
 		Rpc(nameof(UpdateHealthRpc), playerOrder, health, increased);

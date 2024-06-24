@@ -13,6 +13,8 @@ public partial class Game : Node
     [Signal]
     public delegate void ShotEventHandler();
     [Signal]
+    public delegate void WallRolledEventHandler(long playerId, int numRolled);
+    [Signal]
     public delegate void DiceTaskFinishedEventHandler();
 
     enum Location { Paradise, Dusty, Tomato, Snobby, Viking, Retail, Lonely, Pleasant,
@@ -38,7 +40,8 @@ public partial class Game : Node
         EmitSignal(SignalName.GoofyFunctionReady);
         if (!_goofyFinished) await ToSignal(this, SignalName.GoofyFunctionFinished);
 
-        int spacesToMove = _wallSpace > 0 ? _wallSpace : _rolledNumber;
+        int spacesToMove = _wallSpace >= 0 ? _wallSpace : _rolledNumber;
+        _wallSpace = -1;
         Rpc(nameof(MovePlayer), _turnOrder[_currentPlayer.Order], spacesToMove);
         _goofyFinished = false;
     }
@@ -94,7 +97,16 @@ public partial class Game : Node
     }
     void Wall()
     {
-        GD.Print("WALL");
+        EmitSignal(SignalName.WallRolled, _turnOrder[_currentPlayer.Order], _rolledNumber);
+        // Wait for space to be chosen
+        _waitForDiceTask = true;
+    }
+    public void SetWallSpace(int spaceChosen) => RpcId(1, nameof(SetWallSpaceRpc), spaceChosen);
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    void SetWallSpaceRpc(int spaceChosen)
+    {
+        _wallSpace = spaceChosen;
+        EmitSignal(SignalName.DiceTaskFinished);
     }
 
     [Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
