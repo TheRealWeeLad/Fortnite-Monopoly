@@ -19,10 +19,22 @@ public partial class TreasureCard : Node3D
 		// LEGENDARY ITEMS
 		[Description("Bush")] Bush,
 		[Description("Legendary Sniper")] LegendarySniper, // 2 of these
-		[Description("Chug Jug")] ChugJug
+		[Description("Chug Jug")] ChugJug,
+		// HIDDEN ITEM
+		[Description("Hidden")] Hidden
 	}
-	public CardType Type { get; private set; }
+	CardType _type;
+	public CardType Type
+	{
+		get {
+			if (Hidden && !Multiplayer.IsServer() && Multiplayer.GetUniqueId() != Holder)
+				return CardType.Hidden;
+			return _type;
+		} private set => _type = value;
+	}
 	public bool OneTimeUse { get; private set; }
+	public bool Hidden { get; private set; } = true;
+	public long Holder { get; private set; }
 	readonly int[] _oneTimeUseIndices = { 2, 3, 4, 9 };
 	string[] _itemDescriptions =
 	{
@@ -58,4 +70,6 @@ public partial class TreasureCard : Node3D
 		_itemDescription.Text = _itemDescriptions[cardIdx];
 		if (_oneTimeUseIndices.Contains(cardIdx)) OneTimeUse = true;
 	}
+
+	public void SetHolder(long ownerId) => Holder = ownerId;
 }

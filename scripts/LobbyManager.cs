@@ -14,7 +14,7 @@ public partial class LobbyManager : Node
 	public delegate void AllPlayersConnectedEventHandler();
 
 	public static Dictionary<long, Player> Players { get; } = new();
-	readonly Player player = new() { Name = "Username", Order = 0, Health = 10, Space = 0 };
+	readonly Player player = new();
 
 	// Server info
 	const int PORT = 7000;
@@ -200,13 +200,22 @@ public readonly struct Player
 	public readonly int Order { get => _dict["Order"].AsInt32(); set => _dict["Order"] = value; }
 	public readonly int Health { get => _dict["Health"].AsInt32(); set => _dict["Health"] = value; }
 	public readonly int Space { get => _dict["Space"].AsInt32(); set => _dict["Space"] = value; }
+	public readonly int Damage { get => _dict["Damage"].AsInt32(); set => _dict["Damage"] = value; }
 
-	public Player() => _dict = new();
+	public Player()
+	{
+		_dict = new();
+		Name = "Username";
+		Order = 0;
+		Health = 15;
+		Space = 0;
+		Damage = 1;
+	}
 	public Player(Godot.Collections.Dictionary dict) => _dict = dict;
 
 	public static Player FromVariant(Variant var) => new(var.AsGodotDictionary());
 	public static implicit operator Variant(Player plr) => plr._dict;
-	public static implicit operator Player(Godot.Collections.Dictionary var) => new Player(var);
+	public static implicit operator Player(Godot.Collections.Dictionary var) => new(var);
 
 	public override string ToString()
 	{

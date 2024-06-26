@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static System.Net.Mime.MediaTypeNames;
 
 public partial class Game : Node
 {
@@ -26,7 +27,7 @@ public partial class Game : Node
                     Flush, Wailing, Salty, Haunted, Greasy, Loot, Lazy, Tilted }
     Action[] _board;
     Action[] _diceFuncs;
-
+    
     // Store each player's cards
     List<TreasureCard>[] _playerCards = { new(), new(), new(), new() };
     AnimationPlayer _currentCardAnimationPlayer;
@@ -78,13 +79,32 @@ public partial class Game : Node
     }
     void Shoot()
     {
-        EmitSignal(SignalName.Shooting, _turnOrder[_currentPlayer.Order]);
+        long shooterId = _turnOrder[_currentPlayer.Order];
+        // Apply any shoot-based cards
+        foreach (TreasureCard card in _playerCards[_currentPlayer.Order])
+            switch (card.Type)
+            {
+                case TreasureCard.CardType.RareSniper: break; // TODO: IMPLEMENT CARD REVEAL
+                case TreasureCard.CardType.EpicSniper: break; // TODO: IMPLEMENT CARD REVEAL
+                case TreasureCard.CardType.LegendarySniper: break; // TODO: IMPLEMENT CARD REVEAL
+                case TreasureCard.CardType.StinkBomb: StinkBomb(shooterId); break;
+            }
+
+        EmitSignal(SignalName.Shooting, shooterId);
         // Wait for player to be shot before continuing
         _waitForDiceTask = true;
     }
     public void Shoot(long id)
     {
-        // TODO: Apply active cards
+        bool checkLOS = true;
+        // Check for LOS bypass
+        foreach (TreasureCard card in _playerCards[_currentPlayer.Order])
+            switch (card.Type)
+            {
+                case TreasureCard.CardType.ShootWherever: checkLOS = false; break;
+            }
+        // Return if not in LOS
+        if (checkLOS && !InLineOfSight(LobbyManager.Players[id])) return;
 
         EmitSignal(SignalName.Shot);
         RpcId(1, nameof(OnShot), id);
@@ -92,12 +112,22 @@ public partial class Game : Node
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
     void OnShot(long shotPlayerId)
     {
-        ChangeHealth(shotPlayerId, -1);
+        ChangeHealth(shotPlayerId, -_currentPlayer.Damage);
         EmitSignal(SignalName.DiceTaskFinished);
+    }
+    void StinkBomb(long stinkerId)
+    {
+        foreach (long playerId in LobbyManager.Players.Keys)
+        {
+            if (playerId == stinkerId) continue;
+            if (InLineOfSight(LobbyManager.Players[playerId])) ChangeHealth(playerId, -3);
+        }
     }
     void BoogieBomb()
     {
-        // TODO: Implement Bush
+        // Check for Bush card
+        foreach (TreasureCard card in _playerCards[_currentPlayer.Order])
+            if (card.Type == TreasureCard.CardType.Bush) return;
 
         // Hit every other player
         long thisPlayerId = _turnOrder[_currentPlayer.Order];
@@ -199,7 +229,15 @@ public partial class Game : Node
     {
         if (_treasureCards.Count == 0) return; // Cry
         TreasureCard card = _treasureCards.Pop();
-        _playerCards[_currentPlayer.Order].Add(card);
+
+        // Update damage if the card is a sniper
+        switch (card.Type)
+        {
+            case TreasureCard.CardType.RareSniper: IncreasePlayerDamage(_currentPlayer, 2); break;
+            case TreasureCard.CardType.EpicSniper: IncreasePlayerDamage(_currentPlayer, 3); break;
+            case TreasureCard.CardType.LegendarySniper: IncreasePlayerDamage(_currentPlayer, 4); break;
+        }
+        _lobbyManager.SynchronizePlayers();
 
         Rpc(nameof(PickUpTreasureCard));
     }
@@ -209,6 +247,7 @@ public partial class Game : Node
         int playerOrder = LobbyManager.Players[Multiplayer.GetUniqueId()].Order;
         int pickerOrder = _currentPlayer.Order;
         Node card = _treasureCardPile.GetChild(-1);
+        _playerCards[_currentPlayer.Order].Add(card as TreasureCard);
         // Remove card from pile
         card.Reparent(this);
         _currentCardAnimationPlayer = card.GetNode<AnimationPlayer>("AnimationPlayer");
@@ -230,13 +269,23 @@ public partial class Game : Node
         int playerOrder = LobbyManager.Players[Multiplayer.GetUniqueId()].Order;
         int pickerOrder = _currentPlayer.Order;
 
-        // TODO: FIX SETDOWN POSITIONING
+        // Change final position to account for cards already there
+        int animIdx = playerOrder == pickerOrder ? 1 : GetAnimIdx(playerOrder, pickerOrder);
+        Animation anim = _currentCardAnimationPlayer.GetAnimation($"SetdownP{animIdx}");
+        Vector3 finalPos = new()
+        {
+            X = anim.BezierTrackGetKeyValue(0, 1),
+            Y = anim.BezierTrackGetKeyValue(1, 1),
+            Z = anim.BezierTrackGetKeyValue(2, 1)
+        };
+        // Offset position by number of cards before this one
+        finalPos += 0.8f * -_directions[animIdx - 1];
+        finalPos += 0.05f * Vector3.Up;
+        // Set final position
+        for (int i = 0; i < 3; i++) anim.BezierTrackSetKeyValue(i, 1, finalPos[i]);
 
-        if (playerOrder == pickerOrder)
-            _currentCardAnimationPlayer.Play("SetdownP1");
-        else
-            // Find animation number
-            _currentCardAnimationPlayer.Play($"SetdownP{GetAnimIdx(playerOrder, pickerOrder)}");
+        // Play animation
+        _currentCardAnimationPlayer.Play($"SetdownP{animIdx}");
         _currentCardAnimationPlayer = null;
 
         if (Multiplayer.IsServer()) EmitSignal(SignalName.TurnResumed);
@@ -256,6 +305,29 @@ public partial class Game : Node
         GD.Print("JAIL");
     }
 
+    // Helper functions
+    void IncreasePlayerDamage(Player player, int amount)
+    {
+        if (player.Damage == 1) player.Damage = amount;
+        else player.Damage += amount;
+    }
+    bool InLineOfSight(Player player)
+    {
+        int currentSpace = _currentPlayer.Space;
+        int otherSpace = player.Space;
+        int diff = otherSpace - currentSpace;
+        if (diff > 8) return false;
+
+        // Num spaces past corner
+        int past = currentSpace % 8;
+
+        // Special case if current player is on a corner
+        if (past == 0 && diff <= 8) return true;
+
+        if (diff >= 0) // Other player is ahead
+            return diff < 9 - past; // 9 spaces per row
+        return -diff <= past;
+    }
     int GetAnimIdx(int playerOrder, int cardHolderOrder)
     {
         int c = 0;
