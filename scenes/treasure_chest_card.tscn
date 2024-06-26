@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://b5xpvolbekdep"]
+[gd_scene load_steps=15 format=3 uid="uid://b5xpvolbekdep"]
 
 [ext_resource type="PackedScene" uid="uid://be6ev60cf7rvo" path="res://assets/models/treasure_chest_card.blend" id="1_upje2"]
 [ext_resource type="Script" path="res://scripts/TreasureCard.cs" id="2_1orlt"]
@@ -702,6 +702,21 @@ tracks/5/keys = {
 "times": PackedFloat32Array(0, 0.5)
 }
 
+[sub_resource type="Animation" id="Animation_lffqb"]
+resource_name = "Reveal"
+length = 0.5
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:rotation:z")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0, 3.14159, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 0.5)
+}
+
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_v5a8g"]
 _data = {
 "Flash": SubResource("Animation_yn38q"),
@@ -710,6 +725,7 @@ _data = {
 "PickupP3": SubResource("Animation_gs26s"),
 "PickupP4": SubResource("Animation_bbwnw"),
 "RESET": SubResource("Animation_3ancb"),
+"Reveal": SubResource("Animation_lffqb"),
 "SetdownP1": SubResource("Animation_1cs4s"),
 "SetdownP2": SubResource("Animation_ymsg6"),
 "SetdownP3": SubResource("Animation_koky6"),

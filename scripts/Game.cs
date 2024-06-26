@@ -66,9 +66,15 @@ public partial class Game : Node
 
 	void SpawnCards()
 	{
+		if (!Multiplayer.IsServer()) return;
 		// Some cards have duplicates
 		int[] cardIndices = { 0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 6, 6, 7, 8, 8, 9 };
 		cardIndices.Shuffle();
+		Rpc(nameof(SpawnCardsRpc), cardIndices);
+	}
+	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+	void SpawnCardsRpc(int[] cardIndices)
+	{
 		for (int i = 0; i < cardIndices.Length; i++)
 		{
 			int idx = cardIndices[i];

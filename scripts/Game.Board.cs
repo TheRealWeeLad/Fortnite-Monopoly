@@ -31,6 +31,7 @@ public partial class Game : Node
     // Store each player's cards
     List<TreasureCard>[] _playerCards = { new(), new(), new(), new() };
     AnimationPlayer _currentCardAnimationPlayer;
+    TreasureCard _cardToReveal;
 
     // Location of a wall if there is one, -1 otherwise
     int _wallSpace = -1;
@@ -80,15 +81,24 @@ public partial class Game : Node
     void Shoot()
     {
         long shooterId = _turnOrder[_currentPlayer.Order];
+        bool ignoreLOS = false;
         // Apply any shoot-based cards
-        foreach (TreasureCard card in _playerCards[_currentPlayer.Order])
+        List<TreasureCard> cards = _playerCards[_currentPlayer.Order];
+        for (int i = 0; i < cards.Count; i++)
+        {
+            TreasureCard card = cards[i];
             switch (card.Type)
             {
-                case TreasureCard.CardType.RareSniper: break; // TODO: IMPLEMENT CARD REVEAL
-                case TreasureCard.CardType.EpicSniper: break; // TODO: IMPLEMENT CARD REVEAL
-                case TreasureCard.CardType.LegendarySniper: break; // TODO: IMPLEMENT CARD REVEAL
-                case TreasureCard.CardType.StinkBomb: StinkBomb(shooterId); break;
+                case TreasureCard.CardType.RareSniper: RevealCard(_currentPlayer.Order, i); break;
+                case TreasureCard.CardType.EpicSniper: RevealCard(_currentPlayer.Order, i); break;
+                case TreasureCard.CardType.LegendarySniper: RevealCard(_currentPlayer.Order, i); break;
+                case TreasureCard.CardType.StinkBomb: RevealCard(_currentPlayer.Order, i); StinkBomb(shooterId); break;
+                case TreasureCard.CardType.ShootWherever: ignoreLOS = true; RevealCard(_currentPlayer.Order, i); break;
             }
+        }
+
+        // Give up in no one in line of sight
+        if (!ignoreLOS && !AnyoneInLineOfSight()) return;
 
         EmitSignal(SignalName.Shooting, shooterId);
         // Wait for player to be shot before continuing
@@ -125,15 +135,22 @@ public partial class Game : Node
     }
     void BoogieBomb()
     {
-        // Check for Bush card
-        foreach (TreasureCard card in _playerCards[_currentPlayer.Order])
-            if (card.Type == TreasureCard.CardType.Bush) return;
-
         // Hit every other player
         long thisPlayerId = _turnOrder[_currentPlayer.Order];
         // Convert Player keys to array to prevent error due to collection modification from synchronizing players O_O
         foreach (long playerId in LobbyManager.Players.Keys.ToArray())
-            if (playerId != thisPlayerId) ChangeHealth(playerId, -1);
+        {
+            if (playerId == thisPlayerId) continue;
+            // Check for Bush card
+            int playerOrder = LobbyManager.Players[playerId].Order;
+            List<TreasureCard> cards = _playerCards[playerOrder];
+            for (int i = 0; i < cards.Count; i++)
+            {
+                TreasureCard card = cards[i];
+                if (card.Type == TreasureCard.CardType.Bush) { RevealCard(playerOrder, i); continue; }
+            }
+            ChangeHealth(playerId, -1);
+        }
     }
     void Wall()
     {
@@ -239,6 +256,7 @@ public partial class Game : Node
         }
         _lobbyManager.SynchronizePlayers();
 
+        _turnStalled = true;
         Rpc(nameof(PickUpTreasureCard));
     }
     [Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
@@ -260,7 +278,6 @@ public partial class Game : Node
 
         // Wait for player to confirm
         if (playerOrder == pickerOrder) EmitSignal(SignalName.CardPulled);
-        if (Multiplayer.IsServer()) _turnStalled = true;
     }
     void ConfirmCard() => Rpc(nameof(StowCard));
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
@@ -290,6 +307,23 @@ public partial class Game : Node
 
         if (Multiplayer.IsServer()) EmitSignal(SignalName.TurnResumed);
     }
+    void RevealCard(int playerOrder, int cardIdx)
+    {
+        TreasureCard card = _playerCards[playerOrder][cardIdx];
+        if (!card.Hidden) return;
+
+        Rpc(nameof(RevealAnimate), playerOrder, cardIdx);
+    }
+    [Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    void RevealAnimate(int playerOrder, int cardIdx)
+    {
+        TreasureCard card = _playerCards[playerOrder][cardIdx];
+        card.Reveal();
+        AnimationPlayer animPlayer = card.GetNode<AnimationPlayer>("AnimationPlayer");
+
+        if (Multiplayer.GetUniqueId() != _turnOrder[_currentPlayer.Order])
+            animPlayer.Play("Reveal");
+    }
 
     void LocationSpace()
     {
@@ -310,6 +344,13 @@ public partial class Game : Node
     {
         if (player.Damage == 1) player.Damage = amount;
         else player.Damage += amount;
+    }
+    bool AnyoneInLineOfSight()
+    {
+        foreach (long playerId in LobbyManager.Players.Keys)
+            if (playerId != _turnOrder[_currentPlayer.Order] && InLineOfSight(LobbyManager.Players[playerId]))
+                return true;
+        return false;
     }
     bool InLineOfSight(Player player)
     {

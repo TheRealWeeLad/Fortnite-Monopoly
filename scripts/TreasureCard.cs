@@ -27,7 +27,7 @@ public partial class TreasureCard : Node3D
 	public CardType Type
 	{
 		get {
-			if (Hidden && !Multiplayer.IsServer() && Multiplayer.GetUniqueId() != Holder)
+			if (Hidden && !Multiplayer.IsServer() && Multiplayer.GetUniqueId() != Holder && !_setUpPhase)
 				return CardType.Hidden;
 			return _type;
 		} private set => _type = value;
@@ -49,6 +49,7 @@ public partial class TreasureCard : Node3D
 		"When you roll (SHOOT),\nthe targeted player pays 4 HP\nto the bank",
 		"(One Time Use)\nCollect HP from the bank\nuntil you have 15!"
 	};
+	bool _setUpPhase = true;
 
 	Label3D _itemName;
 	Label3D _itemDescription;
@@ -69,7 +70,10 @@ public partial class TreasureCard : Node3D
 							 Color.FromHtml("dddd00ff");
 		_itemDescription.Text = _itemDescriptions[cardIdx];
 		if (_oneTimeUseIndices.Contains(cardIdx)) OneTimeUse = true;
+
+		_setUpPhase = false;
 	}
 
 	public void SetHolder(long ownerId) => Holder = ownerId;
+	public void Reveal() => Hidden = false;
 }
