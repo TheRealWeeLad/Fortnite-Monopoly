@@ -46,6 +46,9 @@ shape = SubResource("BoxShape3D_vkvv6")
 [node name="Sprite3D" type="Sprite3D" parent="Board"]
 texture = ExtResource("1_6lvoo")
 
+[node name="TreasureCardPile" type="Node3D" parent="."]
+unique_name_in_owner = true
+
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="UIManager" type="Node" parent="CanvasLayer"]
@@ -227,9 +230,22 @@ theme_override_constants/outline_size = 25
 theme_override_font_sizes/font_size = 64
 text = "How many spaces do you want to move?"
 
+[node name="TreasureCardConfirmation" type="CenterContainer" parent="CanvasLayer"]
+unique_name_in_owner = true
+visible = false
+offset_top = 764.0
+offset_right = 1920.0
+offset_bottom = 1080.0
+
+[node name="CardConfirmButton" type="Button" parent="CanvasLayer/TreasureCardConfirmation"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 64
+text = "Okay"
+
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.965926, -1.13133e-08, 0.258819, -0.258819, -4.2222e-08, 0.965926, 0, -1, -4.37114e-08, 2.65955, 4.42818, 0)
 
+[connection signal="CardPulled" from="." to="CanvasLayer/UIManager" method="ShowTreasureConfirmation"]
 [connection signal="Shooting" from="." to="CanvasLayer/UIManager" method="ShowShootLabel"]
 [connection signal="Shot" from="." to="CanvasLayer/UIManager" method="HideShootLabel"]
 [connection signal="TurnStarted" from="." to="CanvasLayer/UIManager" method="BeginTurn"]
@@ -241,3 +257,5 @@ transform = Transform3D(0.965926, -1.13133e-08, 0.258819, -0.258819, -4.2222e-08
 [connection signal="timeout" from="CanvasLayer/CharacterMenu/PanelContainer/CharacterChooseTimerLabel/CharacterChooseTimer" to="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser" method="Timeout"]
 [connection signal="pressed" from="CanvasLayer/TurnUI/TurnActions/HBoxContainer/VBoxContainer/RollButton" to="." method="Roll"]
 [connection signal="pressed" from="CanvasLayer/TurnUI/TurnActions/HBoxContainer/VBoxContainer/RollButton" to="CanvasLayer/UIManager" method="HideTurnActions"]
+[connection signal="pressed" from="CanvasLayer/TreasureCardConfirmation/CardConfirmButton" to="." method="ConfirmCard"]
+[connection signal="pressed" from="CanvasLayer/TreasureCardConfirmation/CardConfirmButton" to="CanvasLayer/UIManager" method="HideTreasureConfirmation"]

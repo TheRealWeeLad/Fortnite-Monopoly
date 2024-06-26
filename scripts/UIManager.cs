@@ -12,6 +12,7 @@ public partial class UIManager : Node
 	Label _shootLabel;
 	CenterContainer _wallChoices;
 	HBoxContainer _numberContainer;
+	CenterContainer _treasureCardConfirmation;
 	PackedScene _numberButton;
 	PackedScene _playerHealth;
 	VBoxContainer _playerHealthContainer;
@@ -35,6 +36,7 @@ public partial class UIManager : Node
 		_shootLabel = GetNode<Label>("%ShootLabel");
 		_wallChoices = GetNode<CenterContainer>("%WallChoices");
 		_numberContainer = GetNode<HBoxContainer>("%NumberContainer");
+		_treasureCardConfirmation = GetNode<CenterContainer>("%TreasureCardConfirmation");
 		_numberButton = GD.Load<PackedScene>("res://scenes/number_button.tscn");
 		_playerHealth = GD.Load<PackedScene>("res://scenes/player_health.tscn");
 		_playerHealthContainer = GetNode<VBoxContainer>("%PlayerHealths");
@@ -112,11 +114,13 @@ public partial class UIManager : Node
 	void ShowTurnActions() => _turnActions.Visible = true;
 	void HideTurnActions() => _turnActions.Visible = false;
 	void UpdateTurnCounter() => _turnCounter.Text = $"Turn {Game.CurrentTurn}";
+	// Shoot
 	void ShowShootLabel(long playerId) => RpcId(playerId, nameof(ShowShootLabelRpc));
 	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
 	void ShowShootLabelRpc() => _shootLabel.Visible = true;
 	void HideShootLabel() => _shootLabel.Visible = false;
 	
+	// Wall
 	void ShowWallChoices(long playerId, int numRolled) => RpcId(playerId, nameof(ShowWallChoicesRpc), numRolled);
 	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
 	void ShowWallChoicesRpc(int numRolled)
@@ -137,6 +141,10 @@ public partial class UIManager : Node
 		_wallChoices.Visible = true;
 	}
 	void HideWallChoices() => _wallChoices.Visible = false;
+
+	// Treasure Card
+	void ShowTreasureConfirmation() => _treasureCardConfirmation.Visible = true;
+	void HideTreasureConfirmation() => _treasureCardConfirmation.Visible = false;
 
 	void UpdateHealthBar(int playerOrder, int health, bool increased) =>
 		Rpc(nameof(UpdateHealthRpc), playerOrder, health, increased);

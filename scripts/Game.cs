@@ -1,5 +1,7 @@
+using FortniteMonopolyExtensions;
 using Godot;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 public partial class Game : Node
@@ -14,6 +16,10 @@ public partial class Game : Node
 	PackedScene[] _characterModels;
 	PackedScene _dice;
 	PackedScene _goofyDice;
+	PackedScene _treasureCard;
+	Node3D _treasureCardPile;
+	// Store cards for pickup
+	Stack<TreasureCard> _treasureCards = new();
 	// Store dice to remove them when next turn starts
 	RigidBody3D[] _diceModels = new RigidBody3D[2];
 	// Allocate 4 players in case someone joins halfway
@@ -38,20 +44,41 @@ public partial class Game : Node
 		_diceFuncs = new Action[4] { HealDice, Shoot, BoogieBomb, Wall };
 
 		// Load board
-		_board = new Action[32] { Nothing, LocationSpace, Campfire, LocationSpace, Chest, LocationSpace,
+		/*_board = new Action[32] { Nothing, LocationSpace, Campfire, LocationSpace, Chest, LocationSpace,
 								  SpikeTrap, LocationSpace, Nothing, LocationSpace, Campfire,
 								  LocationSpace, Chest, LocationSpace, SpikeTrap, LocationSpace,
 								  Nothing, LocationSpace, Campfire, LocationSpace, Chest, LocationSpace,
 								  SpikeTrap, LocationSpace, GoToJail, LocationSpace, Campfire,
 								  LocationSpace, Chest, LocationSpace, SpikeTrap, LocationSpace };
-
-		// TODO: Load All Cards
+*/		_board = new Action[32] { Chest, Chest, Chest, Chest, Chest, Chest, Chest, Chest, Chest, Chest, Chest, Chest, Chest, Chest, Chest, Chest, Chest, Chest, Chest, Chest, Chest, Chest, Chest, Chest, Chest, Chest, Chest, Chest, Chest, Chest, Chest, Chest };
+		// Load Cards
+		_treasureCard = GD.Load<PackedScene>("res://scenes/treasure_chest_card.tscn");
+		_treasureCardPile = GetNode<Node3D>("%TreasureCardPile");
+		// Spawn Cards
+		SpawnCards();
 
 		// TODO: Reconnect Signals for connecting/disconnecting
 
 		// Tell server that this player is loaded
 		_lobbyManager = GetNode<LobbyManager>("/root/LobbyManager");
 		_lobbyManager.Rpc("LoadPlayer");
+	}
+
+	void SpawnCards()
+	{
+		// Some cards have duplicates
+		int[] cardIndices = { 0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 6, 6, 7, 8, 8, 9 };
+		cardIndices.Shuffle();
+		for (int i = 0; i < cardIndices.Length; i++)
+		{
+			int idx = cardIndices[i];
+			TreasureCard card = _treasureCard.Instantiate() as TreasureCard;
+			card.Position += 0.02f * i * Vector3.Up;
+			_treasureCardPile.AddChild(card);
+			if (Multiplayer.IsServer()) _treasureCards.Push(card);
+
+			card.SetCardType(idx);
+		}
 	}
 
 	// Called after character selection

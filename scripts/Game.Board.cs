@@ -1,5 +1,6 @@
 ﻿using Godot;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 public partial class Game : Node
@@ -16,11 +17,19 @@ public partial class Game : Node
     public delegate void WallRolledEventHandler(long playerId, int numRolled);
     [Signal]
     public delegate void DiceTaskFinishedEventHandler();
+    [Signal]
+    public delegate void CardPulledEventHandler();
+    [Signal]
+    public delegate void TurnResumedEventHandler();
 
     enum Location { Paradise, Dusty, Tomato, Snobby, Viking, Retail, Lonely, Pleasant,
                     Flush, Wailing, Salty, Haunted, Greasy, Loot, Lazy, Tilted }
     Action[] _board;
     Action[] _diceFuncs;
+
+    // Store each player's cards
+    List<TreasureCard>[] _playerCards = { new(), new(), new(), new() };
+    AnimationPlayer _currentCardAnimationPlayer;
 
     // Location of a wall if there is one, -1 otherwise
     int _wallSpace = -1;
@@ -30,6 +39,7 @@ public partial class Game : Node
     bool _goofyReady = false;
     bool _goofyFinished = false;
     bool _waitForDiceTask = false;
+    bool _turnStalled = false;
 
     async void ReadNormalDice(int num)
     {
@@ -162,7 +172,7 @@ public partial class Game : Node
         animPlayer.AnimationFinished += Land;
     }
 
-    void LandOnSpace(Player player, bool passedGo)
+    async void LandOnSpace(Player player, bool passedGo)
     {
         if (passedGo)
         {
@@ -170,6 +180,8 @@ public partial class Game : Node
         }
 
         _board[player.Space].Invoke();
+        if (_turnStalled) await ToSignal(this, SignalName.TurnResumed);
+        _turnStalled = false;
 
         Rpc(nameof(EndTurn));
     }
@@ -185,8 +197,51 @@ public partial class Game : Node
     }
     void Chest()
     {
-        GD.Print("CHEST");
+        if (_treasureCards.Count == 0) return; // Cry
+        TreasureCard card = _treasureCards.Pop();
+        _playerCards[_currentPlayer.Order].Add(card);
+
+        Rpc(nameof(PickUpTreasureCard));
     }
+    [Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    void PickUpTreasureCard()
+    {
+        int playerOrder = LobbyManager.Players[Multiplayer.GetUniqueId()].Order;
+        int pickerOrder = _currentPlayer.Order;
+        Node card = _treasureCardPile.GetChild(-1);
+        // Remove card from pile
+        card.Reparent(this);
+        _currentCardAnimationPlayer = card.GetNode<AnimationPlayer>("AnimationPlayer");
+
+        if (playerOrder == pickerOrder)
+            _currentCardAnimationPlayer.Play("PickupP1");
+        else
+            // Find animation number
+            _currentCardAnimationPlayer.Play($"PickupP{GetAnimIdx(playerOrder, pickerOrder)}");
+
+        // Wait for player to confirm
+        if (playerOrder == pickerOrder) EmitSignal(SignalName.CardPulled);
+        if (Multiplayer.IsServer()) _turnStalled = true;
+    }
+    void ConfirmCard() => Rpc(nameof(StowCard));
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    void StowCard()
+    {
+        int playerOrder = LobbyManager.Players[Multiplayer.GetUniqueId()].Order;
+        int pickerOrder = _currentPlayer.Order;
+
+        // TODO: FIX SETDOWN POSITIONING
+
+        if (playerOrder == pickerOrder)
+            _currentCardAnimationPlayer.Play("SetdownP1");
+        else
+            // Find animation number
+            _currentCardAnimationPlayer.Play($"SetdownP{GetAnimIdx(playerOrder, pickerOrder)}");
+        _currentCardAnimationPlayer = null;
+
+        if (Multiplayer.IsServer()) EmitSignal(SignalName.TurnResumed);
+    }
+
     void LocationSpace()
     {
         GD.Print((Location)(_currentPlayer.Space / 2));
@@ -199,5 +254,20 @@ public partial class Game : Node
     void GoToJail()
     {
         GD.Print("JAIL");
+    }
+
+    int GetAnimIdx(int playerOrder, int cardHolderOrder)
+    {
+        int c = 0;
+        for (int i = 0; i < LobbyManager.Players.Count; i++)
+        {
+            if (playerOrder == i) continue;
+            if (i == cardHolderOrder)
+            {
+                return c + 2;
+            }
+            c++;
+        }
+        return c;
     }
 }
