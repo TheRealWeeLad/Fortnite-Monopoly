@@ -58,6 +58,8 @@ public partial class Game : Node
 		// Spawn Cards
 		SpawnCards();
 
+		// Connect signals
+		CardFinished += DiscardCard;
 		// TODO: Reconnect Signals for connecting/disconnecting
 
 		// Tell server that this player is loaded

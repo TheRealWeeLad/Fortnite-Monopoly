@@ -32,16 +32,26 @@ public partial class CardRayDetector : Node3D
 		Godot.Collections.Dictionary result = spaceState.IntersectRay(query);
 		if (result.Count == 0)
 		{
+			if ((bool)_aimedAt?.Dying) return;
 			_aimedAt = null;
 			_animPlayer?.PlayBackwards("Hover");
 			_animPlayer = null;
 			return;
 		}
 		TreasureCard hit = result["collider"].AsGodotObject() as TreasureCard;
+		if (hit.Dying) return;
 
 		// Set hover animation
+		// Wait for animation to finish
+		if (_animPlayer != null && !_animPlayer.CurrentAnimation.Equals("")) return;
 		if (hit.GetInstanceId() == _aimedAt?.GetInstanceId()) return;
-		else if (_aimedAt != null) _animPlayer?.PlayBackwards("Hover");
+		else if (_aimedAt != null)
+		{
+			if (_aimedAt.Dying) return;
+			_animPlayer?.PlayBackwards("Hover");
+			_animPlayer = null;
+			_aimedAt = null;
+		}
 		// Don't register unusable cards
 		if (!hit.IsOneTimeUse() || hit.Holder != _playerId) return;
 		_aimedAt = hit;

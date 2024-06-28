@@ -34,6 +34,7 @@ public partial class TreasureCard : StaticBody3D
 	}
 	public bool OneTimeUse { get; private set; }
 	public bool Hidden { get; private set; } = true;
+	public bool Dying { get; private set; }
 	public long Holder { get; private set; }
 	readonly int[] _oneTimeUseIndices = { 2, 3, 4, 9 };
 	string[] _itemDescriptions =
@@ -75,6 +76,7 @@ public partial class TreasureCard : StaticBody3D
 	}
 
 	public void SetHolder(long ownerId) => Holder = ownerId;
+	public void Die() => Dying = true;
 	public void Reveal() => Hidden = false;
 	public bool IsOneTimeUse() => _oneTimeUseIndices.Contains((int)Type);
 }

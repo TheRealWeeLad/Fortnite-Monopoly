@@ -22,16 +22,19 @@ public partial class Game : Node
     public delegate void CardPulledEventHandler();
     [Signal]
     public delegate void TurnResumedEventHandler();
+    [Signal]
+    public delegate void CardFinishedEventHandler();
 
     enum Location { Paradise, Dusty, Tomato, Snobby, Viking, Retail, Lonely, Pleasant,
-                    Flush, Wailing, Salty, Haunted, Greasy, Loot, Lazy, Tilted }
+        Flush, Wailing, Salty, Haunted, Greasy, Loot, Lazy, Tilted }
     Action[] _board;
     Action[] _diceFuncs;
-    
+
     // Store each player's cards
     List<TreasureCard>[] _playerCards = { new(), new(), new(), new() };
     AnimationPlayer _currentCardAnimationPlayer;
     TreasureCard _cardToReveal;
+    TreasureCard _cardInUse;
     CardRayDetector _cardRayDetector;
 
     // Location of a wall if there is one, -1 otherwise
@@ -77,7 +80,11 @@ public partial class Game : Node
     // Card Ray Detection
     void BeginCardRayDetection() => _cardRayDetector.SetPlayerId(_turnOrder[_currentPlayer.Order]);
     // Using Cards
-    public void UseCard(TreasureCard card) => RpcId(1, nameof(UseCardRpc), card.Type.ToString());
+    public void UseCard(TreasureCard card)
+    {
+        _cardInUse = card;
+        RpcId(1, nameof(UseCardRpc), card.Type.ToString());
+    }
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
     void UseCardRpc(string cardType)
     {
@@ -85,8 +92,40 @@ public partial class Game : Node
         MethodInfo method = typeof(Game).GetMethod(cardType, BindingFlags.NonPublic | BindingFlags.Instance);
         method.Invoke(this, new object[] { playerId });
     }
-    void MedKit(long playerId) => ChangeHealth(playerId, 5);
-    void ChugJug(long playerId) => ChangeHealth(playerId, 15);
+    void DiscardCard() => RpcId(_turnOrder[_currentPlayer.Order], nameof(DiscardCardLocal));
+    [Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    void DiscardCardLocal()
+    {
+        int cardIdx = _playerCards[_currentPlayer.Order].IndexOf(_cardInUse);
+        _cardInUse = null;
+        Rpc(nameof(DiscardCardRpc), cardIdx);
+    }
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    void DiscardCardRpc(int cardIdx)
+    {
+        TreasureCard card = _playerCards[_currentPlayer.Order][cardIdx];
+        // Disable Raycast towards this card
+        card.Die();
+
+        // Play animation
+        AnimationPlayer animPlayer = card.GetNode<AnimationPlayer>("AnimationPlayer");
+        animPlayer.AnimationFinished += (StringName _) => card.QueueFree();
+        // Set correct positions
+        Animation anim = animPlayer.GetAnimation("Leave");
+        anim.BezierTrackSetKeyValue(0, 0, card.Position.Y);
+        anim.BezierTrackSetKeyValue(0, 1, card.Position.Y + 20);
+        animPlayer.Play("Leave");
+    }
+    void MedKit(long playerId)
+    {
+        ChangeHealth(playerId, 5);
+        EmitSignal(SignalName.CardFinished);
+    }
+    void ChugJug(long playerId)
+    {
+        ChangeHealth(playerId, 15);
+        EmitSignal(SignalName.CardFinished);
+    }
     void Clinger(long playerId)
     {
         GD.Print("CLINGER");
