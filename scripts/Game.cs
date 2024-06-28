@@ -54,6 +54,7 @@ public partial class Game : Node
 		// Load Cards
 		_treasureCard = GD.Load<PackedScene>("res://scenes/treasure_chest_card.tscn");
 		_treasureCardPile = GetNode<Node3D>("%TreasureCardPile");
+		_cardRayDetector = GetNode<CardRayDetector>("%CardRayDetector");
 		// Spawn Cards
 		SpawnCards();
 

@@ -1,9 +1,10 @@
-[gd_scene load_steps=13 format=3 uid="uid://c8nkdelaa7r41"]
+[gd_scene load_steps=14 format=3 uid="uid://c8nkdelaa7r41"]
 
 [ext_resource type="Texture2D" uid="uid://bmvtu1pvqnqgo" path="res://assets/board/board-full.webp" id="1_6lvoo"]
 [ext_resource type="Script" path="res://scripts/Game.cs" id="1_fohef"]
 [ext_resource type="Texture2D" uid="uid://urmnrxyakkv8" path="res://assets/visuals/cuddle_team_leader.png" id="3_8jusb"]
 [ext_resource type="Script" path="res://scripts/UIManager.cs" id="3_b3mnn"]
+[ext_resource type="Script" path="res://scripts/CardRayDetector.cs" id="3_jk224"]
 [ext_resource type="Texture2D" uid="uid://dw12uhrxhbcdx" path="res://assets/visuals/batman.png" id="5_iowtc"]
 [ext_resource type="Script" path="res://scripts/CharacterChooser.cs" id="5_ww336"]
 [ext_resource type="Texture2D" uid="uid://b7rwqj66xhgk1" path="res://assets/visuals/banana.jpg" id="6_h4e7l"]
@@ -33,6 +34,9 @@ script = ExtResource("1_fohef")
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_i3td8")
 
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.965926, -1.13133e-08, 0.258819, -0.258819, -4.2222e-08, 0.965926, 0, -1, -4.37114e-08, 2.65955, 4.42818, 0)
+
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.724172, 0.68962, 0, -0.68962, 0.724172, 0, 5, 8)
 
@@ -48,6 +52,10 @@ texture = ExtResource("1_6lvoo")
 
 [node name="TreasureCardPile" type="Node3D" parent="."]
 unique_name_in_owner = true
+
+[node name="CardRayDetector" type="Node3D" parent="."]
+unique_name_in_owner = true
+script = ExtResource("3_jk224")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
@@ -209,6 +217,25 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 48
 text = "Use Cards"
 
+[node name="UseCardsActions" type="MarginContainer" parent="CanvasLayer/TurnUI"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 8
+theme_override_constants/margin_left = 815
+theme_override_constants/margin_right = 25
+theme_override_constants/margin_bottom = 25
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/TurnUI/UseCardsActions"]
+layout_mode = 2
+theme_override_constants/separation = 505
+
+[node name="BackButton" type="Button" parent="CanvasLayer/TurnUI/UseCardsActions/HBoxContainer"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 48
+text = "Back"
+
 [node name="WallChoices" type="CenterContainer" parent="CanvasLayer"]
 unique_name_in_owner = true
 visible = false
@@ -242,9 +269,6 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 64
 text = "Okay"
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.965926, -1.13133e-08, 0.258819, -0.258819, -4.2222e-08, 0.965926, 0, -1, -4.37114e-08, 2.65955, 4.42818, 0)
-
 [connection signal="CardPulled" from="." to="CanvasLayer/UIManager" method="ShowTreasureConfirmation"]
 [connection signal="Shooting" from="." to="CanvasLayer/UIManager" method="ShowShootLabel"]
 [connection signal="Shot" from="." to="CanvasLayer/UIManager" method="HideShootLabel"]
@@ -257,5 +281,12 @@ transform = Transform3D(0.965926, -1.13133e-08, 0.258819, -0.258819, -4.2222e-08
 [connection signal="timeout" from="CanvasLayer/CharacterMenu/PanelContainer/CharacterChooseTimerLabel/CharacterChooseTimer" to="CanvasLayer/CharacterMenu/PanelContainer/MarginContainer/CharacterChooser" method="Timeout"]
 [connection signal="pressed" from="CanvasLayer/TurnUI/TurnActions/HBoxContainer/VBoxContainer/RollButton" to="." method="Roll"]
 [connection signal="pressed" from="CanvasLayer/TurnUI/TurnActions/HBoxContainer/VBoxContainer/RollButton" to="CanvasLayer/UIManager" method="HideTurnActions"]
+[connection signal="pressed" from="CanvasLayer/TurnUI/TurnActions/HBoxContainer/VBoxContainer2/UseCardsButton" to="." method="BeginCardRayDetection"]
+[connection signal="pressed" from="CanvasLayer/TurnUI/TurnActions/HBoxContainer/VBoxContainer2/UseCardsButton" to="CanvasLayer/UIManager" method="HideTurnActions"]
+[connection signal="pressed" from="CanvasLayer/TurnUI/TurnActions/HBoxContainer/VBoxContainer2/UseCardsButton" to="CanvasLayer/UIManager" method="ShowCardActions"]
+[connection signal="pressed" from="CanvasLayer/TurnUI/TurnActions/HBoxContainer/VBoxContainer2/UseCardsButton" to="CardRayDetector" method="BeginDetecting"]
+[connection signal="pressed" from="CanvasLayer/TurnUI/UseCardsActions/HBoxContainer/BackButton" to="CanvasLayer/UIManager" method="ShowTurnActions"]
+[connection signal="pressed" from="CanvasLayer/TurnUI/UseCardsActions/HBoxContainer/BackButton" to="CanvasLayer/UIManager" method="HideCardActions"]
+[connection signal="pressed" from="CanvasLayer/TurnUI/UseCardsActions/HBoxContainer/BackButton" to="CardRayDetector" method="StopDetecting"]
 [connection signal="pressed" from="CanvasLayer/TreasureCardConfirmation/CardConfirmButton" to="." method="ConfirmCard"]
 [connection signal="pressed" from="CanvasLayer/TreasureCardConfirmation/CardConfirmButton" to="CanvasLayer/UIManager" method="HideTreasureConfirmation"]

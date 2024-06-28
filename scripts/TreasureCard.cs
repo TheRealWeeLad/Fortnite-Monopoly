@@ -3,7 +3,7 @@ using System.ComponentModel;
 using FortniteMonopolyExtensions;
 using System.Linq;
 
-public partial class TreasureCard : Node3D
+public partial class TreasureCard : StaticBody3D
 {
 	public enum CardType
 	{
@@ -76,4 +76,5 @@ public partial class TreasureCard : Node3D
 
 	public void SetHolder(long ownerId) => Holder = ownerId;
 	public void Reveal() => Hidden = false;
+	public bool IsOneTimeUse() => _oneTimeUseIndices.Contains((int)Type);
 }

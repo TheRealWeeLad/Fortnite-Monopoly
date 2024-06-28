@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static System.Net.Mime.MediaTypeNames;
+using System.Reflection;
 
 public partial class Game : Node
 {
@@ -32,6 +32,7 @@ public partial class Game : Node
     List<TreasureCard>[] _playerCards = { new(), new(), new(), new() };
     AnimationPlayer _currentCardAnimationPlayer;
     TreasureCard _cardToReveal;
+    CardRayDetector _cardRayDetector;
 
     // Location of a wall if there is one, -1 otherwise
     int _wallSpace = -1;
@@ -73,6 +74,31 @@ public partial class Game : Node
         EmitSignal(SignalName.GoofyFunctionFinished);
     }
 
+    // Card Ray Detection
+    void BeginCardRayDetection() => _cardRayDetector.SetPlayerId(_turnOrder[_currentPlayer.Order]);
+    // Using Cards
+    public void UseCard(TreasureCard card) => RpcId(1, nameof(UseCardRpc), card.Type.ToString());
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    void UseCardRpc(string cardType)
+    {
+        long playerId = Multiplayer.GetRemoteSenderId();
+        MethodInfo method = typeof(Game).GetMethod(cardType, BindingFlags.NonPublic | BindingFlags.Instance);
+        method.Invoke(this, new object[] { playerId });
+    }
+    void MedKit(long playerId) => ChangeHealth(playerId, 5);
+    void ChugJug(long playerId) => ChangeHealth(playerId, 15);
+    void Clinger(long playerId)
+    {
+        GD.Print("CLINGER");
+        // TODO: IMPLEMENT
+    }
+    void Bouncer(long playerId)
+    {
+        GD.Print("BOUNCER");
+        // TODO: IMPLEMENT
+    }
+
+    // Dice Functions
     void HealDice()
     {
         long id = _turnOrder[_currentPlayer.Order];
@@ -108,7 +134,8 @@ public partial class Game : Node
     {
         bool checkLOS = true;
         // Check for LOS bypass
-        foreach (TreasureCard card in _playerCards[_currentPlayer.Order])
+        List<TreasureCard> copy = new(_playerCards[_currentPlayer.Order]);
+        foreach (TreasureCard card in copy)
             switch (card.Type)
             {
                 case TreasureCard.CardType.ShootWherever: checkLOS = false; break;
@@ -135,6 +162,7 @@ public partial class Game : Node
     }
     void BoogieBomb()
     {
+        // TODO: FIX BUSH
         // Hit every other player
         long thisPlayerId = _turnOrder[_currentPlayer.Order];
         // Convert Player keys to array to prevent error due to collection modification from synchronizing players O_O
@@ -166,6 +194,7 @@ public partial class Game : Node
         EmitSignal(SignalName.DiceTaskFinished);
     }
 
+    // Player Movement
     [Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
     void MovePlayer(long playerId, int numSpaces)
     {
@@ -329,15 +358,18 @@ public partial class Game : Node
     void LocationSpace()
     {
         GD.Print((Location)(_currentPlayer.Space / 2));
+        // TODO: IMPLEMENT
     }
     void Nothing() { }
     void Go()
     {
         GD.Print("PASSED GO");
+        // TODO: IMPLEMENT
     }
     void GoToJail()
     {
         GD.Print("JAIL");
+        // TODO: IMPLEMENT
     }
 
     // Helper functions

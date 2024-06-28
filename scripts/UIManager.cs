@@ -8,6 +8,7 @@ public partial class UIManager : Node
 	MarginContainer _characterMenu;
 	SplitContainer _turnUI;
 	MarginContainer _turnActions;
+	MarginContainer _useCardsActions;
 	Label _turnCounter;
 	Label _shootLabel;
 	CenterContainer _wallChoices;
@@ -32,6 +33,7 @@ public partial class UIManager : Node
 		_characterMenu = GetNode<MarginContainer>("%CharacterMenu");
 		_turnUI = GetNode<SplitContainer>("%TurnUI");
 		_turnActions = GetNode<MarginContainer>("%TurnActions");
+		_useCardsActions = GetNode<MarginContainer>("%UseCardsActions");
 		_turnCounter = GetNode<Label>("%TurnCount");
 		_shootLabel = GetNode<Label>("%ShootLabel");
 		_wallChoices = GetNode<CenterContainer>("%WallChoices");
@@ -114,6 +116,8 @@ public partial class UIManager : Node
 	void ShowTurnActions() => _turnActions.Visible = true;
 	void HideTurnActions() => _turnActions.Visible = false;
 	void UpdateTurnCounter() => _turnCounter.Text = $"Turn {Game.CurrentTurn}";
+	void ShowCardActions() => _useCardsActions.Visible = true;
+	void HideCardActions() => _useCardsActions.Visible = false;
 	// Shoot
 	void ShowShootLabel(long playerId) => RpcId(playerId, nameof(ShowShootLabelRpc));
 	[Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
