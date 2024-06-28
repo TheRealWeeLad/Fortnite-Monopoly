@@ -264,8 +264,9 @@ public partial class Game : Node
     {
         int playerOrder = LobbyManager.Players[Multiplayer.GetUniqueId()].Order;
         int pickerOrder = _currentPlayer.Order;
-        Node card = _treasureCardPile.GetChild(-1);
-        _playerCards[_currentPlayer.Order].Add(card as TreasureCard);
+        TreasureCard card = _treasureCardPile.GetChild(-1) as TreasureCard;
+        card.SetHolder(_turnOrder[pickerOrder]);
+        _playerCards[_currentPlayer.Order].Add(card);
         // Remove card from pile
         card.Reparent(this);
         _currentCardAnimationPlayer = card.GetNode<AnimationPlayer>("AnimationPlayer");
